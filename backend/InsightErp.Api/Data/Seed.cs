@@ -8,17 +8,17 @@ public static class Seed
 {
     public static async Task EnsureAdminAsync(AppDbContext db)
     {
-        // ako nema korisnika - napravi default Admin-a
+        
         if (!await db.Users.AnyAsync())
         {
             var admin = new User
             {
                 Email = "admin@insighterp.test",
                 Username = "admin",
-                RoleId = 1 // Admin
+                RoleId = 1 
             };
             var hasher = new PasswordHasher<User>();
-            admin.PasswordHash = hasher.HashPassword(admin, "Admin#12345"); // promeni posle
+            admin.PasswordHash = hasher.HashPassword(admin, "Admin#12345"); 
             db.Users.Add(admin);
             await db.SaveChangesAsync();
         }

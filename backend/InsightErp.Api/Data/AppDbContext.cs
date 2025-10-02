@@ -9,6 +9,7 @@ public class AppDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
+    public DbSet<Product> Products => Set<Product>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -26,7 +27,15 @@ public class AppDbContext : DbContext
          .HasIndex(u => u.Username)
          .IsUnique();
 
-        
+        b.Entity<Product>(e =>
+        {
+            e.ToTable("Products");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            e.HasIndex(x => x.Name).IsUnique();                 
+            e.Property(x => x.Price).HasColumnType("decimal(18,2)");
+        });
+
         b.Entity<Role>().HasData(
             new Role { Id = 1, Name = "Admin" },
             new Role { Id = 2, Name = "Referent" },
