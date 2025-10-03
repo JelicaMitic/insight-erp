@@ -82,7 +82,13 @@ public class ProductsService : IProductsService
         if (await _db.Products.AnyAsync(x => x.Name == dto.Name, ct))
             throw new InvalidOperationException("Product name already exists.");
 
-        var p = new Product { Name = dto.Name, Price = dto.Price, StockQuantity = dto.StockQuantity };
+        var p = new Product
+        {
+            Name = dto.Name,
+            Price = dto.Price,
+            StockQuantity = dto.StockQuantity,
+            WarehouseId = dto.WarehouseId  
+        };
         _db.Products.Add(p);
         await _db.SaveChangesAsync(ct); 
 
@@ -129,7 +135,7 @@ public class ProductsService : IProductsService
             await _db.Products.AnyAsync(x => x.Name == dto.Name, ct))
             throw new InvalidOperationException("Product name already exists.");
 
-        p.Name = dto.Name; p.Price = dto.Price; p.StockQuantity = dto.StockQuantity;
+        p.Name = dto.Name; p.Price = dto.Price; p.StockQuantity = dto.StockQuantity; p.WarehouseId = dto.WarehouseId;
         await _db.SaveChangesAsync(ct);
 
         var doc = new ProductCatalogDocument { ProductId = id, Description = dto.Description,

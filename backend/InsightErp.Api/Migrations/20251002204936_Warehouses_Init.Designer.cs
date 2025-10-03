@@ -4,6 +4,7 @@ using InsightErp.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InsightErp.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251002204936_Warehouses_Init")]
+    partial class Warehouses_Init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,15 +44,10 @@ namespace InsightErp.Api.Migrations
                     b.Property<int>("StockQuantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("WarehouseId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
                         .IsUnique();
-
-                    b.HasIndex("WarehouseId");
 
                     b.ToTable("Products", (string)null);
                 });
@@ -133,38 +131,6 @@ namespace InsightErp.Api.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Warehouse", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Location")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Warehouses");
-                });
-
-            modelBuilder.Entity("InsightErp.Api.Models.Product", b =>
-                {
-                    b.HasOne("Warehouse", "Warehouse")
-                        .WithMany("Products")
-                        .HasForeignKey("WarehouseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Warehouse");
-                });
-
             modelBuilder.Entity("InsightErp.Api.Models.User", b =>
                 {
                     b.HasOne("InsightErp.Api.Models.Role", "Role")
@@ -179,11 +145,6 @@ namespace InsightErp.Api.Migrations
             modelBuilder.Entity("InsightErp.Api.Models.Role", b =>
                 {
                     b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("Warehouse", b =>
-                {
-                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

@@ -22,5 +22,16 @@ public static class Seed
             db.Users.Add(admin);
             await db.SaveChangesAsync();
         }
+
+        if (!db.Warehouses.Any())
+        {
+            var wh1 = new Warehouse { Name = "Glavno skladište", Location = "Beograd" };
+            var wh2 = new Warehouse { Name = "Skladište Novi Sad", Location = "Novi Sad" };
+
+            db.Warehouses.AddRange(wh1, wh2);
+            await db.SaveChangesAsync();
+        }
+
+
     }
 }

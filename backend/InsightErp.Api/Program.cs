@@ -2,6 +2,7 @@
 using InsightErp.Api.Services;
 using InsightErp.Api.Services.Auth;
 using InsightErp.Api.Services.Security;
+using InsightErp.Api.Services.Inventory;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -18,6 +19,8 @@ builder.Services.AddSingleton<MongoContext>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProductsService, ProductsService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+
 
 
 // AuthN / AuthZ (JWT)

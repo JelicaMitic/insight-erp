@@ -5,7 +5,7 @@ namespace InsightErp.Api.Models.Mongo;
 
 public class ProductCatalogDocument
 {
-    [BsonId] public ObjectId Id { get; set; }
+    [BsonId] public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
 
     [BsonElement("productId")] public int ProductId { get; set; }
     [BsonElement("description")] public string? Description { get; set; }
