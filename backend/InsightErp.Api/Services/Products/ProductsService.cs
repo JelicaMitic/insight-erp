@@ -49,7 +49,7 @@ public class ProductsService : IProductsService
                 case JsonValueKind.True: return true;
                 case JsonValueKind.False: return false;
                 case JsonValueKind.Null: return null!;
-                default: return el.ToString(); // fallback
+                default: return el.ToString();
             }
         }
         return value;
