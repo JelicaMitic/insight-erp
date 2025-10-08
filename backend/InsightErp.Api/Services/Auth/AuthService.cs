@@ -33,6 +33,7 @@ public class AuthService : IAuthService
         if (user is null || !user.IsActive)
             throw new UnauthorizedAccessException("Invalid credentials");
 
+
         var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
         if (result == PasswordVerificationResult.Failed)
             throw new UnauthorizedAccessException("Invalid credentials");

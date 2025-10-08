@@ -12,12 +12,26 @@ public class AuthController : ControllerBase
     private readonly IAuthService _auth;
     public AuthController(IAuthService auth) => _auth = auth;
 
+    //[HttpPost("login")]
+    //[AllowAnonymous]
+    //public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto dto)
+    //    => Ok(await _auth.LoginAsync(dto));
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto dto)
-        => Ok(await _auth.LoginAsync(dto));
+    { 
+        try
+        {
+            var result = await _auth.LoginAsync(dto);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+    }
 
-    
+
     [HttpPost("register")]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult> Register([FromBody] RegisterUserDto dto)

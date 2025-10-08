@@ -81,6 +81,16 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy => policy
+            .WithOrigins("http://localhost:5173") // ← frontend port
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
+});
+
 builder.Services.AddControllers();
 
 var app = builder.Build();
@@ -94,6 +104,8 @@ using (var scope = app.Services.CreateScope())
     
     await Seed.EnsureAdminAsync(db);
 }
+
+app.UseCors("AllowFrontend");
 
 app.UseSwagger();
 app.UseSwaggerUI();
