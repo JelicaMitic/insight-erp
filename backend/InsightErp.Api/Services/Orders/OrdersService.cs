@@ -2,6 +2,7 @@
 using InsightErp.Api.Models;
 using InsightErp.Api.Models.Orders;
 using Microsoft.EntityFrameworkCore;
+using InsightErp.Api.Models.Inventory;
 
 namespace InsightErp.Api.Services.Orders;
 
@@ -42,13 +43,15 @@ public class OrdersService : IOrdersService
             if (req.Quantity <= 0)
                 throw new InvalidOperationException("Quantity must be > 0.");
 
-            if (product.StockQuantity < req.Quantity)
-                throw new InvalidOperationException($"Not enough stock for '{product.Name}'.");
+            var wp = await _db.WarehouseProducts
+                .FirstOrDefaultAsync(x => x.ProductId == req.ProductId && x.WarehouseId == dto.WarehouseId, ct);
 
-            
+            if (wp == null || wp.StockQuantity < req.Quantity)
+                throw new InvalidOperationException($"Not enough stock for '{product.Name}' in the selected warehouse.");
+
+            wp.StockQuantity -= req.Quantity;
+
             var unitPrice = product.Price;
-
-            product.StockQuantity -= req.Quantity;
 
             var item = new OrderItem
             {
@@ -61,6 +64,7 @@ public class OrdersService : IOrdersService
 
             total += unitPrice * req.Quantity;
         }
+
 
         _db.OrderItems.AddRange(itemsToAdd);
         order.TotalAmount = total;

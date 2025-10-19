@@ -31,7 +31,6 @@ public class ProductsService : IProductsService
             Id = p.Id,
             Name = p.Name,
             Price = p.Price,
-            StockQuantity = p.StockQuantity,
             Description = map.TryGetValue(p.Id, out var d) ? d.Description : null
         }).ToList();
     }
@@ -67,7 +66,6 @@ public class ProductsService : IProductsService
             Id = p.Id,
             Name = p.Name,
             Price = p.Price,
-            StockQuantity = p.StockQuantity,
             Description = doc?.Description,
             Attributes = doc?.Attributes?
            .ToDictionary(
@@ -85,9 +83,7 @@ public class ProductsService : IProductsService
         var p = new Product
         {
             Name = dto.Name,
-            Price = dto.Price,
-            StockQuantity = dto.StockQuantity,
-            WarehouseId = dto.WarehouseId  
+            Price = dto.Price
         };
         _db.Products.Add(p);
         await _db.SaveChangesAsync(ct); 
@@ -128,6 +124,7 @@ public class ProductsService : IProductsService
 
     public async Task<ProductDetailedDto?> UpdateAsync(int id, UpdateProductDto dto, CancellationToken ct = default)
     {
+        // SQL deo 
         var p = await _db.Products.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (p == null) return null;
 
@@ -135,23 +132,60 @@ public class ProductsService : IProductsService
             await _db.Products.AnyAsync(x => x.Name == dto.Name, ct))
             throw new InvalidOperationException("Product name already exists.");
 
-        p.Name = dto.Name; p.Price = dto.Price; p.StockQuantity = dto.StockQuantity; p.WarehouseId = dto.WarehouseId;
+        p.Name = dto.Name;
+        p.Price = dto.Price;
+
         await _db.SaveChangesAsync(ct);
 
-        var doc = new ProductCatalogDocument { ProductId = id, Description = dto.Description,
-            Attributes = dto.Attributes != null
-    ? new BsonDocument(
-        dto.Attributes.ToDictionary(
-            kvp => kvp.Key,
-            kvp => BsonValue.Create(NormalizeJsonValue(kvp.Value))
-        )
-      )
-    : null
-        };
-        await _mongo.ProductCatalog.ReplaceOneAsync(x => x.ProductId == id, doc, new ReplaceOptions { IsUpsert = true }, ct);
+        //Mongo db
+        var attributesBson = dto.Attributes != null
+            ? new BsonDocument(dto.Attributes.ToDictionary(
+                kvp => kvp.Key,
+                kvp => BsonValue.Create(NormalizeJsonValue(kvp.Value))
+            ))
+            : null;
 
+        var update = Builders<ProductCatalogDocument>.Update
+            .Set(x => x.Description, dto.Description)
+            .Set(x => x.Attributes, attributesBson);
+
+        await _mongo.ProductCatalog.UpdateOneAsync(
+            x => x.ProductId == id,
+            update,
+            new UpdateOptions { IsUpsert = true },
+            ct
+        );
+
+    
         return await GetByIdAsync(id, ct);
     }
+
+    //public async Task<ProductDetailedDto?> UpdateAsync(int id, UpdateProductDto dto, CancellationToken ct = default)
+    //{
+    //    var p = await _db.Products.FirstOrDefaultAsync(x => x.Id == id, ct);
+    //    if (p == null) return null;
+
+    //    if (!string.Equals(p.Name, dto.Name, StringComparison.OrdinalIgnoreCase) &&
+    //        await _db.Products.AnyAsync(x => x.Name == dto.Name, ct))
+    //        throw new InvalidOperationException("Product name already exists.");
+
+    //    p.Name = dto.Name; p.Price = dto.Price; p.StockQuantity = dto.StockQuantity; p.WarehouseId = dto.WarehouseId;
+    //    await _db.SaveChangesAsync(ct);
+
+    //    var doc = new ProductCatalogDocument { ProductId = id, Description = dto.Description,
+    //        Attributes = dto.Attributes != null
+    //? new BsonDocument(
+    //    dto.Attributes.ToDictionary(
+    //        kvp => kvp.Key,
+    //        kvp => BsonValue.Create(NormalizeJsonValue(kvp.Value))
+    //    )
+    //  )
+    //: null
+    //    };
+    //    await _mongo.ProductCatalog.ReplaceOneAsync(x => x.ProductId == id, doc, new ReplaceOptions { IsUpsert = true }, ct);
+
+    //    return await GetByIdAsync(id, ct);
+    //}
 
     public async Task<ProductDetailedDto?> DeleteAsync(int id, CancellationToken ct = default)
     {

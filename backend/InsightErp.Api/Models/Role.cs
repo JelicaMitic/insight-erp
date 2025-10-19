@@ -1,3 +1,5 @@
+using InsightErp.Api.Models.Users;
+
 namespace InsightErp.Api.Models;
 
 public class Role

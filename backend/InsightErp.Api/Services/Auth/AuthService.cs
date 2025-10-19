@@ -1,6 +1,7 @@
 using InsightErp.Api.Data;
-using InsightErp.Api.Models;
 using InsightErp.Api.Models.Auth;
+using InsightErp.Api.Models.Users;
+using InsightErp.Api.Models;
 using InsightErp.Api.Services.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

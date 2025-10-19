@@ -1,5 +1,7 @@
 ﻿using InsightErp.Api.Models.Products;
 
+namespace InsightErp.Api.Models.Inventory;
+
 public class WarehouseDto
 {
     public int Id { get; set; }

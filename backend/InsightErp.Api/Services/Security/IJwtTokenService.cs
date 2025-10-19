@@ -1,4 +1,4 @@
-using InsightErp.Api.Models;
+using InsightErp.Api.Models.Users;
 
 namespace InsightErp.Api.Services.Security;
 

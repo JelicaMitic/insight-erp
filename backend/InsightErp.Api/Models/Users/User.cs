@@ -1,6 +1,6 @@
 using System;
 
-namespace InsightErp.Api.Models;
+namespace InsightErp.Api.Models.Users;
 
 public class User
 {

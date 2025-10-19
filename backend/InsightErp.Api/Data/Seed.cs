@@ -1,6 +1,7 @@
-using InsightErp.Api.Models;
+using InsightErp.Api.Models.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using InsightErp.Api.Models.Inventory;
 
 namespace InsightErp.Api.Data;
 

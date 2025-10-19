@@ -1,4 +1,7 @@
 ﻿using InsightErp.Api.Models;
+using InsightErp.Api.Models.Products;
+
+namespace InsightErp.Api.Models.Inventory;
 
 public class Warehouse
 {
@@ -6,5 +9,5 @@ public class Warehouse
     public string Name { get; set; } = null!;
     public string Location { get; set; } = null!;
 
-    public ICollection<Product> Products { get; set; } = new List<Product>();
+    public ICollection<WarehouseProduct> WarehouseProducts { get; set; } = new List<WarehouseProduct>();
 }

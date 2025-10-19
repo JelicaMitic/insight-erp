@@ -1,5 +1,9 @@
 using InsightErp.Api.Models;
+using InsightErp.Api.Models.Auth;
+using InsightErp.Api.Models.Products;
+using InsightErp.Api.Models.Users;
 using Microsoft.EntityFrameworkCore;
+using InsightErp.Api.Models.Inventory;
 using System.Reflection.Emit;
 
 namespace InsightErp.Api.Data;
@@ -12,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Warehouse> Warehouses { get; set; }
+    public DbSet<WarehouseProduct> WarehouseProducts { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<Invoice> Invoices { get; set; }
@@ -37,7 +42,7 @@ public class AppDbContext : DbContext
             e.ToTable("Products");
             e.HasKey(x => x.Id);
             e.Property(x => x.Name).HasMaxLength(200).IsRequired();
-            e.HasIndex(x => x.Name).IsUnique();                 
+            e.HasIndex(x => x.Name).IsUnique();
             e.Property(x => x.Price).HasColumnType("decimal(18,2)");
         });
 
@@ -46,12 +51,23 @@ public class AppDbContext : DbContext
             new Role { Id = 2, Name = "Referent" },
             new Role { Id = 3, Name = "Menadzer" }
         );
-        //Product - Warehouse
-        b.Entity<Product>()
-        .HasOne(p => p.Warehouse)
-        .WithMany(w => w.Products)
-        .HasForeignKey(p => p.WarehouseId)
-        .OnDelete(DeleteBehavior.Restrict);
+        b.Entity<WarehouseProduct>()
+          .HasKey(wp => new { wp.WarehouseId, wp.ProductId });
+
+        b.Entity<WarehouseProduct>()
+            .HasOne(wp => wp.Warehouse)
+            .WithMany(w => w.WarehouseProducts)
+            .HasForeignKey(wp => wp.WarehouseId);
+
+        b.Entity<WarehouseProduct>()
+            .HasOne(wp => wp.Product)
+            .WithMany(p => p.WarehouseProducts)
+            .HasForeignKey(wp => wp.ProductId);
+
+        b.Entity<WarehouseProduct>()
+            .Property(wp => wp.StockQuantity)
+            .HasDefaultValue(0);
+
 
         // Order - OrderItem (cascade delete)
         b.Entity<OrderItem>()

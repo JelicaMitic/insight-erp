@@ -1,4 +1,6 @@
-﻿using InsightErp.Api.Models.Products;
+﻿using InsightErp.Api.Models.Inventory;
+using InsightErp.Api.Models.Products;
+using InsightErp.Api.Services.Inventory;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +22,16 @@ public class WarehousesController : ControllerBase
     {
         var success = await _svc.UpdateStockAsync(id, dto, ct);
         return success ? Ok() : BadRequest("Stock update failed.");
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<WarehouseDto>> GetById(int id, CancellationToken ct)
+    {
+        var warehouse = await _svc.GetByIdAsync(id, ct);
+        if (warehouse == null)
+            return NotFound();
+
+        return Ok(warehouse);
     }
 
     [HttpGet("low-stock")]
