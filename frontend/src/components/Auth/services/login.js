@@ -19,14 +19,11 @@ export const loginService = async (email, password) => {
 
     const user = { username, email: userEmail, role, expiresAtUtc };
 
-    // Sačuvaj i LS ključeve koje čita axios interceptor
     localStorage.setItem("erp.token", token);
     localStorage.setItem("erp.user", JSON.stringify(user));
 
     return { token, user };
   } catch (error) {
-    // Obezbedi da uvek imaš isti format greške za spoljašnju obradu
-    // Ako backend vrati response, prosledi ga zajedno sa statusom
     if (error.response) {
       return Promise.reject({
         status: error.response.status,
@@ -36,7 +33,6 @@ export const loginService = async (email, password) => {
       });
     }
 
-    // Ako nije stigao odgovor (npr. server ne radi)
     if (error.request) {
       return Promise.reject({
         status: null,
@@ -44,7 +40,6 @@ export const loginService = async (email, password) => {
       });
     }
 
-    // Generalna greška (npr. nepredviđeno ponašanje)
     return Promise.reject({
       status: null,
       message: error.message || "Došlo je do greške.",

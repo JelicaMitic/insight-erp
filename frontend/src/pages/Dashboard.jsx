@@ -34,6 +34,3 @@ export default function Dashboard() {
     </Grid>
   );
 }
-// export default function Dashboard() {
-//   return <div>Dashboard radi 🎉</div>;
-// }

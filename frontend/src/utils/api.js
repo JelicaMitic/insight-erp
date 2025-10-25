@@ -30,3 +30,8 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+export const getAuthHeaders = () => {
+  const token = localStorage.getItem("erp.token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};

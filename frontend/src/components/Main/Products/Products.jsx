@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Box, Grid, Typography, Button, Stack } from "@mui/material";
+import { Box, Grid, Typography, Button, Stack, TextField } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import toast from "react-hot-toast";
+
 import ProductCard from "./ProductCard";
 import ProductForm from "./ProductForm";
 import {
@@ -20,11 +20,10 @@ export default function Products() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [warehouses, setWarehouses] = useState([]);
-
   const [editing, setEditing] = useState(null); // product object
   const [detailsId, setDetailsId] = useState(null); // id
 
+  // 🔄 Fetch products on mount
   useEffect(() => {
     (async () => {
       try {
@@ -39,12 +38,13 @@ export default function Products() {
     })();
   }, []);
 
+  // ➕ Create
   const onCreate = async (payload) => {
     const created = await createProductService(payload);
-    // backend vraća objekat sa id-jem – dodaj u listu
     setItems((arr) => [created, ...arr]);
   };
 
+  // ✏️ Update
   const onUpdate = async (payload) => {
     if (!editing) return;
     const updated = await updateProductService(editing.id, payload);
@@ -53,6 +53,7 @@ export default function Products() {
     );
   };
 
+  // ❌ Delete
   const onDelete = async (id) => {
     try {
       await deleteProductService(id);
@@ -91,6 +92,7 @@ export default function Products() {
         <Typography variant="h5" fontWeight={800}>
           Proizvodi
         </Typography>
+
         <Button
           onClick={() => setCreateOpen(true)}
           startIcon={<AddIcon />}
@@ -99,6 +101,8 @@ export default function Products() {
           Novi proizvod
         </Button>
       </Stack>
+
+      {/* Search bar */}
       <Box sx={{ width: "100%", mb: 3 }}>
         <TextField
           placeholder="Pretraži proizvode..."
@@ -110,11 +114,9 @@ export default function Products() {
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: 3,
-              backgroundColor: "rgba(255,255,255,0.03)", // blago naglašena pozadina
+              backgroundColor: "rgba(255,255,255,0.03)",
             },
-            "& input": {
-              color: "white",
-            },
+            "& input": { color: "white" },
           }}
           InputProps={{
             startAdornment: <SearchIcon sx={{ mr: 1, opacity: 0.6 }} />,
@@ -122,45 +124,40 @@ export default function Products() {
         />
       </Box>
 
+      {/* Main content */}
       {loading ? (
         <Typography variant="body2">Učitavanje...</Typography>
       ) : items.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
           Nema proizvoda.
         </Typography>
+      ) : filteredItems.length === 0 ? (
+        <Typography variant="body2" color="text.secondary">
+          Nema proizvoda koji odgovaraju pretrazi.
+        </Typography>
       ) : (
-        <>
-          {/* 🧠 Filtriranje proizvoda */}
-          {filteredItems.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">
-              Nema proizvoda koji odgovaraju pretrazi.
-            </Typography>
-          ) : (
-            <Grid container spacing={2} alignItems="stretch">
-              {filteredItems.map((p) => (
-                <Grid
-                  key={p.id}
-                  item
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    width: { xs: "100%", sm: "50%", md: "33.33%", lg: "25%" },
-                  }}
-                >
-                  <ProductCard
-                    product={p}
-                    onEdit={openEdit}
-                    onDelete={onDelete}
-                    onDetails={openDetails}
-                  />
-                </Grid>
-              ))}
+        <Grid container spacing={2} alignItems="stretch">
+          {filteredItems.map((p) => (
+            <Grid
+              key={p.id}
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              lg={4}
+              sx={{ display: "flex" }}
+            >
+              <ProductCard
+                product={p}
+                onEdit={openEdit}
+                onDelete={onDelete}
+                onDetails={openDetails}
+              />
             </Grid>
-          )}
-        </>
+          ))}
+        </Grid>
       )}
 
-      {/* Create */}
       <ProductForm
         open={createOpen}
         mode="create"
@@ -168,7 +165,6 @@ export default function Products() {
         onSubmit={onCreate}
       />
 
-      {/* Edit */}
       <ProductForm
         open={editOpen}
         mode="edit"
@@ -181,7 +177,6 @@ export default function Products() {
         onSubmit={onUpdate}
       />
 
-      {/* Details (read-only -> toggle edit within modal) */}
       <ProductForm
         open={detailsOpen}
         mode="details"
@@ -191,7 +186,6 @@ export default function Products() {
           setDetailsId(null);
         }}
         onSubmit={async (payload) => {
-          // Ako korisnik iz details moda pređe u edit i sačuva
           const updated = await updateProductService(detailsId, payload);
           setItems((arr) =>
             arr.map((it) => (it.id === detailsId ? { ...it, ...updated } : it))

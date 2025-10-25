@@ -41,9 +41,7 @@ export default function ProductForm({
   const [form, setForm] = useState({
     name: "",
     price: "",
-    stockQuantity: "",
     description: "",
-    warehouseId: "",
   });
 
   // Warehouses
@@ -53,21 +51,17 @@ export default function ProductForm({
       .catch(() => toast.error("Neuspešno učitavanje skladišta."));
   }, []);
 
-  // Helper: popuni formu + (opciono) atribute
   const fillFrom = (data) => {
     setForm({
       name: data?.name || "",
       price: data?.price ?? "",
-      stockQuantity: data?.stockQuantity ?? "",
       description: data?.description || "",
-      warehouseId: data?.warehouseId ?? "",
     });
     if (data?.attributes) {
       setAttributes(data.attributes);
     }
   };
 
-  // Otvaranje modala / režimi
   useEffect(() => {
     if (!open) return;
 
@@ -75,9 +69,7 @@ export default function ProductForm({
       setForm({
         name: "",
         price: "",
-        stockQuantity: "",
         description: "",
-        warehouseId: "",
       });
       setAttributes({});
       setReadOnly(false);
@@ -99,11 +91,9 @@ export default function ProductForm({
     }
 
     if (isEdit) {
-      // 1) odmah prikaži ono što imaš (da UI ne bude prazan)
       if (initialData) fillFrom(initialData);
       setReadOnly(false);
 
-      // 2) uvek dovuci single-product da dobiješ attributes & sveže podatke
       if (productId != null) {
         setLoading(true);
         getSingleProductService(productId)
@@ -117,12 +107,7 @@ export default function ProductForm({
 
   const canSubmit = useMemo(() => {
     if (readOnly) return false;
-    return (
-      form.name.trim().length > 0 &&
-      String(form.price).length > 0 &&
-      String(form.stockQuantity).length > 0 &&
-      String(form.warehouseId).length > 0
-    );
+    return form.name.trim().length > 0 && String(form.price).length > 0;
   }, [form, readOnly]);
 
   const handleChange = (field) => (e) => {
@@ -130,7 +115,6 @@ export default function ProductForm({
     setForm((f) => ({ ...f, [field]: v }));
   };
 
-  // Helpers za atribute bazirane na indexu (stabilni ključevi)
   const attrEntries = Object.entries(attributes);
   const setAttrKeyByIndex = (index, newKey) => {
     const [oldKey, val] = attrEntries[index] || [];
@@ -164,19 +148,15 @@ export default function ProductForm({
       const payload = {
         name: form.name.trim(),
         price: Number(form.price),
-        stockQuantity: Number(form.stockQuantity),
         description: form.description?.trim() || "",
-        warehouseId: Number(form.warehouseId),
-        attributes, // ✅ sada sigurno sadrži izmene
+        attributes,
       };
       await onSubmit(payload);
       if (isCreate) {
         setForm({
           name: "",
           price: "",
-          stockQuantity: "",
           description: "",
-          warehouseId: "",
         });
         setAttributes({});
       }
@@ -205,9 +185,9 @@ export default function ProductForm({
       <DialogContent
         dividers
         sx={{
-          maxHeight: "75vh", // visina modala
-          overflowY: "auto", // dozvoljava samo glavni scroll
-          "&::-webkit-scrollbar": { width: "8px" }, // tanji scrollbar
+          maxHeight: "75vh",
+          overflowY: "auto",
+          "&::-webkit-scrollbar": { width: "8px" },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "rgba(255,255,255,0.2)",
             borderRadius: "4px",
@@ -236,34 +216,7 @@ export default function ProductForm({
                 fullWidth
                 disabled={readOnly}
               />
-              <TextField
-                label="Količina"
-                type="number"
-                value={form.stockQuantity}
-                onChange={handleChange("stockQuantity")}
-                fullWidth
-                disabled={readOnly}
-              />
             </Stack>
-
-            <TextField
-              select
-              label="Skladište"
-              value={form.warehouseId}
-              onChange={handleChange("warehouseId")}
-              fullWidth
-              disabled={readOnly}
-            >
-              {warehouses.length === 0 ? (
-                <MenuItem disabled>Nema dostupnih skladišta</MenuItem>
-              ) : (
-                warehouses.map((w) => (
-                  <MenuItem key={w.id} value={w.id}>
-                    {`${w.id} - ${w.name}`}
-                  </MenuItem>
-                ))
-              )}
-            </TextField>
 
             <TextField
               label="Opis"
@@ -297,7 +250,6 @@ export default function ProductForm({
                       size="small"
                       onClick={() =>
                         setAttributes((a) => {
-                          // dodaj prazan unos; koristi unique ključ da ne pregazi postojeći
                           let n = 1;
                           let key = "atribut";
                           while (a.hasOwnProperty(`${key}_${n}`)) n++;

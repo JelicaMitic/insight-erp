@@ -28,7 +28,7 @@ export default function useNavLinks(role) {
     },
     {
       section: "Operations",
-      to: "/inventory",
+      to: "/warehouse",
       label: "Skladišta & Zalihe",
       icon: Boxes,
       roles: [ROLES.ADMIN, ROLES.REFERENT, ROLES.MENADZER],

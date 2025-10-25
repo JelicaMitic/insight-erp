@@ -5,16 +5,15 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import RequireAuth from "./routes/RequireAuth";
 import ProductsPage from "./pages/Products";
+import Warehouse from "./pages/Warehouse";
+import WarehouseDetails from "./pages/WarehouseDetails";
 
 export default function App() {
   return (
     <Routes>
-      {/* 🔐 LOGIN - jedina ruta dostupna bez autentikacije */}
       <Route path="/login" element={<Login />} />
 
-      {/* 🔒 ZAŠTIĆENE RUTE */}
       <Route element={<MainLayout />}>
-        {/* 📊 Dashboard - svi prijavljeni korisnici */}
         <Route
           element={<RequireAuth allowed={["Admin", "Referent", "Menadžer"]} />}
         >
@@ -22,21 +21,19 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
         </Route>
 
-        {/* 👤 Admin rute */}
         <Route element={<RequireAuth allowed={["Admin"]} />}>
           <Route path="/users" element={<div>Users</div>} />
         </Route>
 
-        {/* 🏬 Referent + Menadžer rute */}
         <Route element={<RequireAuth allowed={["Referent", "Menadžer"]} />}>
           <Route path="/products" element={<ProductsPage />} />
-          <Route path="/inventory" element={<div>Inventory</div>} />
+          <Route path="/warehouse" element={<Warehouse />} />
           <Route path="/orders" element={<div>Orders</div>} />
           <Route path="/analytics" element={<div>Analytics</div>} />
+          <Route path="/warehouse/:id" element={<WarehouseDetails />} />
         </Route>
       </Route>
 
-      {/* 🚫 404 ruta */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
