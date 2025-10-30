@@ -31,7 +31,10 @@ namespace InsightErp.Api.Services.Inventory
                 {
                     Id = wp.Product.Id,
                     Name = wp.Product.Name,
-                    Price = wp.Product.Price
+                    Price = wp.Product.Price,
+                    StockQuantity = wp.StockQuantity,
+                    MinQuantity = wp.MinQuantity
+
                 }).ToList()
             }).ToList();
         }
@@ -45,31 +48,40 @@ namespace InsightErp.Api.Services.Inventory
             if (warehouse == null) return false;
 
             var wp = warehouse.WarehouseProducts.FirstOrDefault(x => x.ProductId == dto.ProductId);
+
             if (wp == null)
             {
                 wp = new WarehouseProduct
                 {
                     WarehouseId = warehouseId,
                     ProductId = dto.ProductId,
-                    StockQuantity = 0
+                    StockQuantity = 0,
+                    MinQuantity = dto.MinQuantity ?? 10
                 };
                 warehouse.WarehouseProducts.Add(wp);
             }
 
-            var newQuantity = wp.StockQuantity + dto.QuantityChange;
-            if (newQuantity < 0) return false;
+            if (dto.QuantityChange != 0)
+            {
+                var newQuantity = wp.StockQuantity + dto.QuantityChange;
+                if (newQuantity < 0) return false;
+                wp.StockQuantity = newQuantity;
+            }
 
-            wp.StockQuantity = newQuantity;
+            if (dto.MinQuantity.HasValue)
+            {
+                wp.MinQuantity = dto.MinQuantity.Value;
+            }
+
             await _db.SaveChangesAsync(ct);
-
             return true;
         }
 
-        public async Task<List<ProductListItemDto>> GetLowStockAsync(int threshold, CancellationToken ct)
+        public async Task<List<ProductListItemDto>> GetLowStockAsync(CancellationToken ct)
         {
             var lowStock = await _db.WarehouseProducts
                 .Include(wp => wp.Product)
-                .Where(wp => wp.StockQuantity < threshold)
+                .Where(wp => wp.StockQuantity < wp.MinQuantity)
                 .AsNoTracking()
                 .ToListAsync(ct);
 
@@ -77,7 +89,9 @@ namespace InsightErp.Api.Services.Inventory
             {
                 Id = wp.Product.Id,
                 Name = wp.Product.Name,
-                Price = wp.Product.Price
+                Price = wp.Product.Price,
+                StockQuantity = wp.StockQuantity,
+                MinQuantity = wp.MinQuantity
             }).ToList();
         }
 
@@ -101,7 +115,9 @@ namespace InsightErp.Api.Services.Inventory
                 {
                     Id = wp.Product.Id,
                     Name = wp.Product.Name,
-                    Price = wp.Product.Price
+                    Price = wp.Product.Price,
+                    StockQuantity = wp.StockQuantity,
+                    MinQuantity = wp.MinQuantity
                 }).ToList()
             };
         }

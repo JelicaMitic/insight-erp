@@ -23,7 +23,6 @@ export default function Sidebar() {
 
   return (
     <aside className="h-screen sticky top-0 border-r border-white/10 bg-[#0B1220] text-slate-200 flex flex-col">
-      {/* Header - logo + collapse dugme */}
       <div className="h-16 flex items-center justify-between px-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-white/10" />
@@ -41,7 +40,6 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* Navigacija */}
       <motion.div
         initial={false}
         animate={{ width: sidebarCollapsed ? 80 : 260 }}

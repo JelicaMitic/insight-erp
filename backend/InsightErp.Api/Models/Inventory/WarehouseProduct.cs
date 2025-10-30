@@ -9,4 +9,6 @@ public class WarehouseProduct
     public int ProductId { get; set; }
     public Product Product { get; set; } = null!;
     public int StockQuantity { get; set; }
+    public int MinQuantity { get; set; }
+
 }

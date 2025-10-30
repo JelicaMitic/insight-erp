@@ -7,8 +7,11 @@ using InsightErp.Api.Services.Orders;
 using InsightErp.Api.Services.Invoices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Diagnostics;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +29,7 @@ builder.Services.AddScoped<IOrdersService, OrdersService>();
 builder.Services.AddScoped<IInvoicesService, InvoicesService>();
 
 
-// AuthN / AuthZ (JWT)
+// Auth
 var jwtKey = builder.Configuration["Jwt:Key"]!;
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
@@ -49,7 +52,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// Swagger + Bearer
+// Swagger;Bearer
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -85,7 +88,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
         policy => policy
-            .WithOrigins("http://localhost:5173") // ← frontend port
+            .WithOrigins("http://localhost:5173") 
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());
@@ -95,6 +98,7 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
+QuestPDF.Settings.License = LicenseType.Community;
 
 using (var scope = app.Services.CreateScope())
 {

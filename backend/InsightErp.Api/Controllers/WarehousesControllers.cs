@@ -36,9 +36,7 @@ public class WarehousesController : ControllerBase
 
     [HttpGet("low-stock")]
     [Authorize(Roles = "Admin,Referent,Menadzer")]
-    public async Task<ActionResult<List<ProductListItemDto>>> GetLowStock(
-    [FromQuery] int threshold = 5,
-    CancellationToken ct = default) 
-    => Ok(await _svc.GetLowStockAsync(threshold, ct));
+    public async Task<ActionResult<List<ProductListItemDto>>> GetLowStock(CancellationToken ct)
+    => Ok(await _svc.GetLowStockAsync(ct));
 
 }

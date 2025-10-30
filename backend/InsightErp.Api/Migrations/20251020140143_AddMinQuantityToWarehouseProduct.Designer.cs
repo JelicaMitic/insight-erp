@@ -4,6 +4,7 @@ using InsightErp.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InsightErp.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251020140143_AddMinQuantityToWarehouseProduct")]
+    partial class AddMinQuantityToWarehouseProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,9 +54,6 @@ namespace InsightErp.Api.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int>("MinQuantity")
-                        .HasColumnType("int");
-
                     b.Property<int>("StockQuantity")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -64,39 +64,6 @@ namespace InsightErp.Api.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("WarehouseProducts");
-                });
-
-            modelBuilder.Entity("InsightErp.Api.Models.Orders.Customer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("InsightErp.Api.Models.Products.Product", b =>
@@ -239,9 +206,6 @@ namespace InsightErp.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
@@ -252,8 +216,6 @@ namespace InsightErp.Api.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
 
                     b.HasIndex("UserId");
 
@@ -332,19 +294,11 @@ namespace InsightErp.Api.Migrations
 
             modelBuilder.Entity("Order", b =>
                 {
-                    b.HasOne("InsightErp.Api.Models.Orders.Customer", "Customer")
-                        .WithMany("Orders")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("InsightErp.Api.Models.Users.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Customer");
 
                     b.Navigation("User");
                 });
@@ -371,11 +325,6 @@ namespace InsightErp.Api.Migrations
             modelBuilder.Entity("InsightErp.Api.Models.Inventory.Warehouse", b =>
                 {
                     b.Navigation("WarehouseProducts");
-                });
-
-            modelBuilder.Entity("InsightErp.Api.Models.Orders.Customer", b =>
-                {
-                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("InsightErp.Api.Models.Products.Product", b =>

@@ -7,4 +7,8 @@ public class InvoiceDto
     public decimal Tax { get; set; }
     public string Status { get; set; } = "Pending";
     public decimal TotalWithTax => Amount + Tax;
+    public string CustomerName { get; set; } = null!;
+    public DateTime Date { get; set; }
+    public List<OrderItemDto> Items { get; set; } = new();
+
 }

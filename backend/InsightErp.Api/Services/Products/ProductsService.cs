@@ -124,7 +124,7 @@ public class ProductsService : IProductsService
 
     public async Task<ProductDetailedDto?> UpdateAsync(int id, UpdateProductDto dto, CancellationToken ct = default)
     {
-        // SQL deo 
+        //SQL 
         var p = await _db.Products.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (p == null) return null;
 
@@ -159,33 +159,6 @@ public class ProductsService : IProductsService
     
         return await GetByIdAsync(id, ct);
     }
-
-    //public async Task<ProductDetailedDto?> UpdateAsync(int id, UpdateProductDto dto, CancellationToken ct = default)
-    //{
-    //    var p = await _db.Products.FirstOrDefaultAsync(x => x.Id == id, ct);
-    //    if (p == null) return null;
-
-    //    if (!string.Equals(p.Name, dto.Name, StringComparison.OrdinalIgnoreCase) &&
-    //        await _db.Products.AnyAsync(x => x.Name == dto.Name, ct))
-    //        throw new InvalidOperationException("Product name already exists.");
-
-    //    p.Name = dto.Name; p.Price = dto.Price; p.StockQuantity = dto.StockQuantity; p.WarehouseId = dto.WarehouseId;
-    //    await _db.SaveChangesAsync(ct);
-
-    //    var doc = new ProductCatalogDocument { ProductId = id, Description = dto.Description,
-    //        Attributes = dto.Attributes != null
-    //? new BsonDocument(
-    //    dto.Attributes.ToDictionary(
-    //        kvp => kvp.Key,
-    //        kvp => BsonValue.Create(NormalizeJsonValue(kvp.Value))
-    //    )
-    //  )
-    //: null
-    //    };
-    //    await _mongo.ProductCatalog.ReplaceOneAsync(x => x.ProductId == id, doc, new ReplaceOptions { IsUpsert = true }, ct);
-
-    //    return await GetByIdAsync(id, ct);
-    //}
 
     public async Task<ProductDetailedDto?> DeleteAsync(int id, CancellationToken ct = default)
     {

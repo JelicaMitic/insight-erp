@@ -5,6 +5,7 @@ using InsightErp.Api.Models.Users;
 using Microsoft.EntityFrameworkCore;
 using InsightErp.Api.Models.Inventory;
 using System.Reflection.Emit;
+using InsightErp.Api.Models.Orders;
 
 namespace InsightErp.Api.Data;
 
@@ -20,6 +21,8 @@ public class AppDbContext : DbContext
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<Invoice> Invoices { get; set; }
+    public DbSet<Customer> Customers { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -69,21 +72,18 @@ public class AppDbContext : DbContext
             .HasDefaultValue(0);
 
 
-        // Order - OrderItem (cascade delete)
         b.Entity<OrderItem>()
             .HasOne(oi => oi.Order)
             .WithMany(o => o.Items)
             .HasForeignKey(oi => oi.OrderId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // OrderItem - Product (restrict)
         b.Entity<OrderItem>()
             .HasOne(oi => oi.Product)
             .WithMany()
             .HasForeignKey(oi => oi.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Invoice - Order (1-1, unique)
         b.Entity<Invoice>()
             .HasOne(i => i.Order)
             .WithOne(o => o.Invoice)

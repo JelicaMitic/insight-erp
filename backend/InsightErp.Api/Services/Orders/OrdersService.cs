@@ -22,12 +22,16 @@ public class OrdersService : IOrdersService
         if (products.Count != productIds.Count)
             throw new InvalidOperationException("One or more products do not exist.");
 
-        
+        var customer = await _db.Customers.FindAsync(new object?[] { dto.CustomerId }, ct);
+        if (customer == null)
+            throw new InvalidOperationException("Customer not found.");
+
         await using var tx = await _db.Database.BeginTransactionAsync(ct);
 
         var order = new Order
         {
             UserId = dto.UserId,
+            CustomerId = dto.CustomerId,
             Date = DateTime.UtcNow
         };
         _db.Orders.Add(order);
@@ -79,6 +83,7 @@ public class OrdersService : IOrdersService
     public async Task<List<OrderDto>> GetOrdersAsync(CancellationToken ct = default)
     {
         var orders = await _db.Orders
+            .Include(o => o.Customer)
             .Include(o => o.Items).ThenInclude(i => i.Product)
             .Include(o => o.Invoice)
             .AsNoTracking()
@@ -96,6 +101,7 @@ public class OrdersService : IOrdersService
         var o = await _db.Orders
             .Include(x => x.Items).ThenInclude(i => i.Product)
             .Include(x => x.Invoice)
+            .Include(o => o.Customer)
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id, ct);
 
@@ -111,6 +117,8 @@ public class OrdersService : IOrdersService
             Date = o.Date,
             TotalAmount = o.TotalAmount,
             InvoiceStatus = o.Invoice?.Status,
+            CustomerName = o.Customer?.Name,
+            InvoiceId = o.Invoice?.Id,
             Items = o.Items.Select(i => new OrderItemDto
             {
                 Id = i.Id,
@@ -122,4 +130,5 @@ public class OrdersService : IOrdersService
             }).ToList()
         };
     }
+
 }

@@ -61,7 +61,7 @@ export default function AddStockDrawer({
       }
     );
 
-    onAdded?.(); // osvežavanje parent komponente
+    onAdded?.();
     onClose();
     setSelectedProduct(null);
     setQuantity("");

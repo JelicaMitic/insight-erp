@@ -1,5 +1,6 @@
 ﻿using InsightErp.Api.Models.Orders;
 using InsightErp.Api.Services.Invoices;
+using InsightErp.Api.Services.Pdf;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,4 +40,17 @@ public class InvoicesController : ControllerBase
         var dto = await _svc.GetByIdAsync(id, ct);
         return dto == null ? NotFound() : Ok(dto);
     }
+   
+    [HttpGet("{id:int}/pdf")]
+    [Authorize(Roles = "Admin,Referent,Menadzer")]
+    public async Task<IActionResult> GetPdf(int id, CancellationToken ct)
+    {
+        var invoice = await _svc.GetByIdAsync(id, ct);
+        if (invoice == null) return NotFound();
+
+        var pdf = PdfGenerator.GenerateInvoicePdf(invoice);
+        return File(pdf, "application/pdf", $"Invoice_{invoice.Id}.pdf");
+    }
+
+
 }
