@@ -7,6 +7,7 @@ import RequireAuth from "./routes/RequireAuth";
 import ProductsPage from "./pages/Products";
 import Warehouse from "./pages/Warehouse";
 import WarehouseDetails from "./pages/WarehouseDetails";
+import OrdersPage from "./pages/Orders";
 
 export default function App() {
   return (
@@ -28,7 +29,7 @@ export default function App() {
         <Route element={<RequireAuth allowed={["Referent", "Menadžer"]} />}>
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/warehouse" element={<Warehouse />} />
-          <Route path="/orders" element={<div>Orders</div>} />
+          <Route path="/orders" element={<OrdersPage />} />
           <Route path="/analytics" element={<div>Analytics</div>} />
           <Route path="/warehouse/:id" element={<WarehouseDetails />} />
         </Route>

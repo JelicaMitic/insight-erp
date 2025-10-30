@@ -5,14 +5,11 @@ const api = axios.create({
   timeout: 15000,
 });
 
-// U svaki zahtev ubacujemo Bearer ako postoji u LS
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("erp.token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
-
-// Ako server vrati 401, brišemo kredencijale i vodimo na login
 api.interceptors.response.use(
   (res) => res,
   (err) => {

@@ -70,7 +70,7 @@ export const createProductService = async (payload) => {
     const res = await axios.post(`${BASE_URL}/api/products`, payload, {
       headers: { "Content-Type": "application/json", ...getAuthHeaders() },
     });
-    return res.data; // očekuje se { id, name, price, stockQuantity, description, attributes? }
+    return res.data;
   } catch (error) {
     return handleAxiosError(error);
   }

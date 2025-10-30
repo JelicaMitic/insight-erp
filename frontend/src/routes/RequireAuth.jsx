@@ -10,7 +10,6 @@ export default function RequireAuth({ allowed = [] }) {
   }
 
   if (allowed.length && user && !allowed.includes(user.role)) {
-    // 403 -> pametan redirect na default rutu po ulozi
     const map = {
       Admin: "/users",
       Referent: "/products",
