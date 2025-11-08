@@ -9,6 +9,7 @@ public class OrderDto
     public string? CustomerName { get; set; }
     public List<OrderItemDto> Items { get; set; } = new();
     public int? InvoiceId { get; set; }
-
+    public int WarehouseId { get; set; }
+    public string WarehouseName { get; set; } = "";
 
 }

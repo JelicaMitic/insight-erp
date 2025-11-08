@@ -15,4 +15,8 @@ public class MongoContext
 
     public IMongoCollection<ProductCatalogDocument> ProductCatalog =>
         Db.GetCollection<ProductCatalogDocument>("ProductCatalog");
+
+    public IMongoCollection<SalesAggregateDocument> SalesAggregates =>
+    Db.GetCollection<SalesAggregateDocument>("sales_aggregates");
+
 }

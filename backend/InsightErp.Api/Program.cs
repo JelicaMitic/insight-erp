@@ -11,6 +11,7 @@ using QuestPDF.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Diagnostics;
+using StackExchange.Redis;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +28,10 @@ builder.Services.AddScoped<IProductsService, ProductsService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IOrdersService, OrdersService>();
 builder.Services.AddScoped<IInvoicesService, InvoicesService>();
+builder.Services.AddScoped<IAnalyticsEtlService, AnalyticsEtlService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+builder.Services.AddHostedService<AnalyticsEtlHostedService>();
+
 
 
 // Auth
@@ -93,6 +98,43 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowCredentials());
 });
+
+// 1) Izvuci vrednost iz više mogućih mesta
+var redisConn =
+    builder.Configuration.GetConnectionString("RedisConnection")                   // appsettings: ConnectionStrings.RedisConnection
+    ?? builder.Configuration.GetConnectionString("Redis")                          // (ako si negde koristila ovaj ključ)
+    ?? builder.Configuration["ConnectionStrings:RedisConnection"]                  // eksplicitna putanja
+    ?? builder.Configuration["Redis:Configuration"]                                // alternativni key
+    ?? Environment.GetEnvironmentVariable("ConnectionStrings__RedisConnection")    // env var (ASP.NET pattern)
+    ?? Environment.GetEnvironmentVariable("REDIS_CONNECTION");                     // custom env var
+
+Console.WriteLine($"[BOOT] Redis connection: '{redisConn ?? "<NULL>"}'");
+
+// 2) Registruj Redis ili fallback na memorijski keš da app ne puca u dev-u
+if (!string.IsNullOrWhiteSpace(redisConn))
+{
+    builder.Services.AddStackExchangeRedisCache(o =>
+    {
+        o.Configuration = redisConn;
+        o.InstanceName = "insighterp:"; // opcionalno
+    });
+}
+else
+{
+    Console.WriteLine("[BOOT] Redis connection is NULL -> using in-memory cache fallback");
+    builder.Services.AddDistributedMemoryCache();
+}
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var conn = redisConn;
+    // fallback tako da ne puca (npr. pri 'dotnet ef') ako Redis nije up
+    if (string.IsNullOrWhiteSpace(conn))
+        conn = "localhost:6379,abortConnect=false";
+
+    return ConnectionMultiplexer.Connect(conn);
+});
+builder.Services.AddSingleton<RedisCacheService>();
+
 
 builder.Services.AddControllers();
 

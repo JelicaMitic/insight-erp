@@ -96,6 +96,15 @@ public class AppDbContext : DbContext
         b.Entity<Invoice>().Property(i => i.Amount).HasColumnType("decimal(18,2)");
         b.Entity<Invoice>().Property(i => i.Tax).HasColumnType("decimal(18,2)");
 
+        b.Entity<Order>()
+        .HasOne(o => o.Warehouse)
+        .WithMany()                      
+        .HasForeignKey(o => o.WarehouseId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+        b.Entity<Order>()
+            .HasIndex(o => new { o.WarehouseId, o.Date }); 
+
 
         b.Entity<Invoice>()
             .HasIndex(i => i.OrderId).IsUnique();

@@ -18,7 +18,6 @@ public class OrdersService : IOrdersService
 
         var productIds = dto.Items.Select(i => i.ProductId).Distinct().ToList();
         var products = await _db.Products.Where(p => productIds.Contains(p.Id)).ToListAsync(ct);
-
         if (products.Count != productIds.Count)
             throw new InvalidOperationException("One or more products do not exist.");
 
@@ -26,16 +25,22 @@ public class OrdersService : IOrdersService
         if (customer == null)
             throw new InvalidOperationException("Customer not found.");
 
+        // NOVO: validacija skladišta
+        var warehouse = await _db.Warehouses.FindAsync(new object?[] { dto.WarehouseId }, ct);
+        if (warehouse == null)
+            throw new InvalidOperationException("Warehouse not found.");
+
         await using var tx = await _db.Database.BeginTransactionAsync(ct);
 
         var order = new Order
         {
             UserId = dto.UserId,
             CustomerId = dto.CustomerId,
+            WarehouseId = dto.WarehouseId,          
             Date = DateTime.UtcNow
         };
         _db.Orders.Add(order);
-        await _db.SaveChangesAsync(ct); 
+        await _db.SaveChangesAsync(ct); // treba nam order.Id za stavke
 
         decimal total = 0m;
         var itemsToAdd = new List<OrderItem>();
@@ -43,32 +48,31 @@ public class OrdersService : IOrdersService
         foreach (var req in dto.Items)
         {
             var product = products.First(p => p.Id == req.ProductId);
-
             if (req.Quantity <= 0)
                 throw new InvalidOperationException("Quantity must be > 0.");
 
+            // provera zaliha u izabranom skladištu
             var wp = await _db.WarehouseProducts
                 .FirstOrDefaultAsync(x => x.ProductId == req.ProductId && x.WarehouseId == dto.WarehouseId, ct);
 
             if (wp == null || wp.StockQuantity < req.Quantity)
                 throw new InvalidOperationException($"Not enough stock for '{product.Name}' in the selected warehouse.");
 
+            // umanji stanje (simple varijanta; za "reservations" treba dodatna tabela)
             wp.StockQuantity -= req.Quantity;
 
             var unitPrice = product.Price;
 
-            var item = new OrderItem
+            itemsToAdd.Add(new OrderItem
             {
                 OrderId = order.Id,
                 ProductId = product.Id,
                 Quantity = req.Quantity,
                 UnitPrice = unitPrice
-            };
-            itemsToAdd.Add(item);
+            });
 
             total += unitPrice * req.Quantity;
         }
-
 
         _db.OrderItems.AddRange(itemsToAdd);
         order.TotalAmount = total;
@@ -86,6 +90,7 @@ public class OrdersService : IOrdersService
             .Include(o => o.Customer)
             .Include(o => o.Items).ThenInclude(i => i.Product)
             .Include(o => o.Invoice)
+            .Include(o => o.Warehouse)
             .AsNoTracking()
             .OrderByDescending(o => o.Date)
             .ToListAsync(ct);
@@ -102,6 +107,7 @@ public class OrdersService : IOrdersService
             .Include(x => x.Items).ThenInclude(i => i.Product)
             .Include(x => x.Invoice)
             .Include(o => o.Customer)
+            .Include(o => o.Warehouse)
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id, ct);
 
@@ -117,6 +123,8 @@ public class OrdersService : IOrdersService
             Date = o.Date,
             TotalAmount = o.TotalAmount,
             InvoiceStatus = o.Invoice?.Status,
+            WarehouseId = o.WarehouseId,                        
+            WarehouseName = o.Warehouse?.Name ?? string.Empty,
             CustomerName = o.Customer?.Name,
             InvoiceId = o.Invoice?.Id,
             Items = o.Items.Select(i => new OrderItemDto

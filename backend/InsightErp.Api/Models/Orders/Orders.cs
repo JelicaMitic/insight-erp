@@ -1,4 +1,5 @@
-﻿using InsightErp.Api.Models.Orders;
+﻿using InsightErp.Api.Models.Inventory;
+using InsightErp.Api.Models.Orders;
 using InsightErp.Api.Models.Users;
 
 public class Order
@@ -13,5 +14,7 @@ public class Order
     public Invoice? Invoice { get; set; }
     public int CustomerId { get; set; }
     public Customer Customer { get; set; } = null!;
+    public int WarehouseId { get; set; }
+    public Warehouse Warehouse { get; set; } = null!;
 
 }
