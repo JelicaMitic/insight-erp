@@ -94,20 +94,16 @@ export const getProductsService = async () => {
   }
 };
 
-// export const downloadInvoicePdfService = async (invoiceId) => {
-//   try {
-//     const res = await axios.get(`${BASE_URL}/api/invoices/${invoiceId}/pdf`, {
-//       headers: getAuthHeaders(),
-//       responseType: "blob",
-//     });
-
-//     const url = window.URL.createObjectURL(new Blob([res.data]));
-//     window.open(url, "_blank");
-//   } catch (err) {
-//     return handleAxiosError(err);
-//   }
-// };
-
+export const getWarehousesService = async () => {
+  try {
+    const res = await axios.get(`${BASE_URL}/api/warehouses`, {
+      headers: getAuthHeaders(),
+    });
+    return res.data || [];
+  } catch (err) {
+    return handleAxiosError(err);
+  }
+};
 export const downloadInvoicePdfService = async (invoiceId) => {
   const token = localStorage.getItem("erp.token");
 

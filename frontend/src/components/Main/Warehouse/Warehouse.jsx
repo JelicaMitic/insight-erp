@@ -100,9 +100,6 @@ export default function Warehouse() {
         alignItems="center"
         mb={3}
       >
-        <Typography variant="h5" fontWeight={600}>
-          🏭 Warehouses Overview
-        </Typography>
         <TextField
           label="Filter by name"
           size="small"

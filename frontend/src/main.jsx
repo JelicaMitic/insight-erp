@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import App from "./App.jsx";
 import { theme } from "./theme/theme.js";
+import "./utils/axiosConfig";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

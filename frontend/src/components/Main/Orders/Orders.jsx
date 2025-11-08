@@ -167,9 +167,6 @@ export default function Orders() {
         alignItems="center"
         mb={2}
       >
-        <Typography variant="h5" fontWeight={600}>
-          📦 Porudžbine
-        </Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}

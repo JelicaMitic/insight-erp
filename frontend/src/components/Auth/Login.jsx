@@ -94,10 +94,24 @@ const Login = () => {
             boxShadow: "0 10px 40px rgba(0,0,0,.35)",
           }}
         >
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h5" fontWeight={700} sx={{ mb: 1 }}>
-              Insight ERP
-            </Typography>
+          <CardContent
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Box
+              component="img"
+              src="/insight_logo.png"
+              alt="InsightERP Logo"
+              sx={{
+                height: 80,
+                objectFit: "contain",
+                userSelect: "none",
+                ml: 1,
+              }}
+            />
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               Prijavi se da nastaviš
             </Typography>

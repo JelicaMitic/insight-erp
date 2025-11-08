@@ -6,10 +6,12 @@ import {
   IconButton,
   Avatar,
 } from "@mui/material";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import TopbarUserMenu from "../components/TopbarUserMenu";
+import usePageTitle from "../hooks/usePageTitle";
 
 export default function Topbar() {
+  const title = usePageTitle();
+
   return (
     <AppBar
       position="sticky"
@@ -22,8 +24,8 @@ export default function Topbar() {
       }}
     >
       <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          Insight ERP
+        <Typography variant="h5" sx={{ flexGrow: 1 }}>
+          {title}
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <IconButton size="small"></IconButton>

@@ -54,56 +54,17 @@ export default function MainLayout() {
               gap: 1.2,
             }}
           >
-            {/* Minimalistički simbol */}
             <Box
+              component="img"
+              src="/insight_logo.png"
+              alt="InsightERP Logo"
               sx={{
-                width: 30,
-                height: 30,
-                borderRadius: 1.5,
-                background: "linear-gradient(135deg, #af54e8 0%, #7c3aed 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(175,84,232,0.4)",
+                height: 60,
+                objectFit: "contain",
+                userSelect: "none",
+                ml: 1,
               }}
-            >
-              <Typography
-                sx={{
-                  color: "#fff",
-                  fontWeight: 700,
-                  fontSize: "0.9rem",
-                }}
-              >
-                IE
-              </Typography>
-            </Box>
-
-            {/* Naziv aplikacije */}
-            <Typography
-              sx={{
-                fontSize: "1.4rem",
-                fontWeight: 800,
-                letterSpacing: "-0.5px",
-                background: "linear-gradient(90deg, #af54e8 0%, #7c3aed 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                fontFamily: "'Inter', 'Poppins', sans-serif",
-              }}
-            >
-              Insight
-              <Box
-                component="span"
-                sx={{
-                  ml: 0.5,
-                  color: (theme) =>
-                    theme.palette.mode === "light" ? "#555" : "#ddd",
-                  fontWeight: 600,
-                  opacity: 0.8,
-                }}
-              >
-                ERP
-              </Box>
-            </Typography>
+            />
           </Box>
         </Toolbar>
 

@@ -90,7 +90,7 @@ export default function Products() {
         sx={{ mb: 3 }}
       >
         <Typography variant="h5" fontWeight={800}>
-          Proizvodi
+          Pregled proizvoda
         </Typography>
 
         <Button

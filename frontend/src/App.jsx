@@ -8,6 +8,8 @@ import ProductsPage from "./pages/Products";
 import Warehouse from "./pages/Warehouse";
 import WarehouseDetails from "./pages/WarehouseDetails";
 import OrdersPage from "./pages/Orders";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import "./utils/axiosConfig";
 
 export default function App() {
   return (
@@ -30,7 +32,7 @@ export default function App() {
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/warehouse" element={<Warehouse />} />
           <Route path="/orders" element={<OrdersPage />} />
-          <Route path="/analytics" element={<div>Analytics</div>} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/warehouse/:id" element={<WarehouseDetails />} />
         </Route>
       </Route>

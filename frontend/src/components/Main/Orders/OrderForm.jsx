@@ -19,28 +19,43 @@ import {
   createOrderService,
   getCustomersService,
   getProductsService,
+  getWarehousesService,
 } from "./services/orders";
 
 export default function OrderForm({ open, onClose, onSubmit }) {
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
+  const [warehouses, setWarehouses] = useState([]);
+
   const [form, setForm] = useState({
     customerId: "",
-    warehouseId: 1, // možeš kasnije dinamički dodati izbor
+    warehouseId: "",
     items: [],
   });
 
+  // Učitaj sve potrebne liste kada se dijalog otvori
   useEffect(() => {
-    if (open) {
-      (async () => {
-        try {
-          setCustomers(await getCustomersService());
-          setProducts(await getProductsService());
-        } catch {
-          toast.error("Greška pri učitavanju podataka.");
-        }
-      })();
-    }
+    if (!open) return;
+    (async () => {
+      try {
+        const [cs, ps, ws] = await Promise.all([
+          getCustomersService(),
+          getProductsService(),
+          getWarehousesService(),
+        ]);
+        setCustomers(cs);
+        setProducts(ps);
+        setWarehouses(ws);
+
+        // podrazumevano skladište (prvo dostupno) ako ništa nije izabrano
+        setForm((f) => ({
+          ...f,
+          warehouseId: f.warehouseId || (ws[0]?.id ?? ""),
+        }));
+      } catch {
+        toast.error("Greška pri učitavanju podataka.");
+      }
+    })();
   }, [open]);
 
   const addItem = () =>
@@ -63,17 +78,26 @@ export default function OrderForm({ open, onClose, onSubmit }) {
     });
 
   const handleSubmit = async () => {
-    if (!form.customerId || form.items.length === 0) {
-      toast.error("Popunite kupca i dodajte barem jedan proizvod.");
-      return;
+    if (!form.customerId) return toast.error("Izaberite kupca.");
+    if (!form.warehouseId) return toast.error("Izaberite skladište.");
+    if (form.items.length === 0)
+      return toast.error("Dodajte barem jedan proizvod.");
+    if (form.items.some((it) => !it.productId || it.quantity <= 0)) {
+      return toast.error("Proverite da su sve stavke ispravno popunjene.");
     }
+
     try {
       await createOrderService({
-        userId: 1, // zameni sa realnim userId iz localStorage/session
-        ...form,
+        userId: 1, // TODO: zameni realnim userId iz auth-a
+        customerId: +form.customerId,
+        warehouseId: +form.warehouseId,
+        items: form.items.map((it) => ({
+          productId: +it.productId,
+          quantity: +it.quantity,
+        })),
       });
       toast.success("Porudžbina uspešno kreirana!");
-      onSubmit();
+      onSubmit?.();
     } catch (err) {
       toast.error(err.message || "Greška pri čuvanju porudžbine.");
     }
@@ -94,6 +118,25 @@ export default function OrderForm({ open, onClose, onSubmit }) {
             {customers.map((c) => (
               <MenuItem key={c.id} value={c.id}>
                 {c.name}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            select
+            label="Skladište"
+            value={form.warehouseId}
+            onChange={(e) => setForm({ ...form, warehouseId: e.target.value })}
+            fullWidth
+            disabled={warehouses.length === 0}
+            helperText={
+              warehouses.length === 0 ? "Nema dostupnih skladišta." : ""
+            }
+          >
+            {warehouses.map((w) => (
+              <MenuItem key={w.id} value={w.id}>
+                {w.name}
+                {w.location ? ` — ${w.location}` : ""}
               </MenuItem>
             ))}
           </TextField>
@@ -126,6 +169,7 @@ export default function OrderForm({ open, onClose, onSubmit }) {
                     </MenuItem>
                   ))}
                 </TextField>
+
                 <TextField
                   type="number"
                   label="Količina"
@@ -136,6 +180,7 @@ export default function OrderForm({ open, onClose, onSubmit }) {
                   sx={{ width: 120 }}
                   inputProps={{ min: 1 }}
                 />
+
                 <IconButton color="error" onClick={() => removeItem(index)}>
                   <DeleteIcon />
                 </IconButton>
