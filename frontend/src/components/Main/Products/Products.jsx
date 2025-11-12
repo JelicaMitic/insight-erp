@@ -1,5 +1,17 @@
 import { useEffect, useState } from "react";
-import { Box, Grid, Typography, Button, Stack, TextField } from "@mui/material";
+import {
+  Box,
+  Grid,
+  Typography,
+  Button,
+  Stack,
+  TextField,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import toast from "react-hot-toast";
@@ -12,26 +24,34 @@ import {
   updateProductService,
   deleteProductService,
 } from "./services/products";
+import { getCategoriesService } from "./services/categories"; // ✅ import kategorija
 
 export default function Products() {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
+  const [categories, setCategories] = useState([]); // 🔹 kategorije
+  const [selectedCategory, setSelectedCategory] = useState(""); // 🔹 izabrana kategorija
   const [search, setSearch] = useState("");
+
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [editing, setEditing] = useState(null); // product object
-  const [detailsId, setDetailsId] = useState(null); // id
+  const [editing, setEditing] = useState(null);
+  const [detailsId, setDetailsId] = useState(null);
 
-  // 🔄 Fetch products on mount
+  // 🔄 Učitavanje proizvoda i kategorija
   useEffect(() => {
     (async () => {
       try {
         setLoading(true);
-        const data = await getProductsService();
-        setItems(Array.isArray(data) ? data : []);
+        const [products, cats] = await Promise.all([
+          getProductsService(),
+          getCategoriesService(),
+        ]);
+        setItems(Array.isArray(products) ? products : []);
+        setCategories(Array.isArray(cats) ? cats : []);
       } catch (err) {
-        toast.error(err.message || "Neuspešno učitavanje proizvoda.");
+        toast.error(err.message || "Greška pri učitavanju podataka.");
       } finally {
         setLoading(false);
       }
@@ -74,14 +94,19 @@ export default function Products() {
     setDetailsOpen(true);
   };
 
-  const filteredItems = items.filter(
-    (p) =>
+  // 🔍 Filter po imenu/opisu + kategoriji
+  const filteredItems = items.filter((p) => {
+    const matchesSearch =
       p.name.toLowerCase().includes(search.toLowerCase()) ||
-      (p.description || "").toLowerCase().includes(search.toLowerCase())
-  );
+      (p.description || "").toLowerCase().includes(search.toLowerCase());
+    const matchesCategory =
+      !selectedCategory || p.categoryName === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <Box sx={{ p: 3 }}>
+      {/* Header */}
       <Stack
         direction={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
@@ -102,8 +127,8 @@ export default function Products() {
         </Button>
       </Stack>
 
-      {/* Search bar */}
-      <Box sx={{ width: "100%", mb: 3 }}>
+      {/* Search + Category Filter */}
+      <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 3 }}>
         <TextField
           placeholder="Pretraži proizvode..."
           value={search}
@@ -111,6 +136,13 @@ export default function Products() {
           variant="outlined"
           size="small"
           fullWidth
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ opacity: 0.6 }} />
+              </InputAdornment>
+            ),
+          }}
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: 3,
@@ -118,22 +150,48 @@ export default function Products() {
             },
             "& input": { color: "white" },
           }}
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ mr: 1, opacity: 0.6 }} />,
-          }}
         />
-      </Box>
+
+        <FormControl
+          size="small"
+          sx={{
+            minWidth: 200,
+            backgroundColor: "rgba(255,255,255,0.03)",
+            borderRadius: 3,
+          }}
+        >
+          <InputLabel id="category-label" sx={{ color: "white" }}>
+            Kategorija
+          </InputLabel>
+          <Select
+            labelId="category-label"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            label="Kategorija"
+            sx={{
+              color: "white",
+              ".MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(255,255,255,0.2)",
+              },
+              "& .MuiSvgIcon-root": { color: "white" },
+            }}
+          >
+            <MenuItem value="">Sve kategorije</MenuItem>
+            {categories.map((cat) => (
+              <MenuItem key={cat.id} value={cat.name}>
+                {cat.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Stack>
 
       {/* Main content */}
       {loading ? (
         <Typography variant="body2">Učitavanje...</Typography>
-      ) : items.length === 0 ? (
-        <Typography variant="body2" color="text.secondary">
-          Nema proizvoda.
-        </Typography>
       ) : filteredItems.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
-          Nema proizvoda koji odgovaraju pretrazi.
+          Nema proizvoda koji odgovaraju kriterijumu pretrage.
         </Typography>
       ) : (
         <Grid container spacing={2} alignItems="stretch">
@@ -158,6 +216,7 @@ export default function Products() {
         </Grid>
       )}
 
+      {/* Forms */}
       <ProductForm
         open={createOpen}
         mode="create"

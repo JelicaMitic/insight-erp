@@ -6,21 +6,19 @@ import {
   DialogActions,
   TextField,
   Button,
-  IconButton,
   Stack,
   Typography,
-  Tooltip,
-  MenuItem,
   CircularProgress,
   Box,
+  MenuItem,
 } from "@mui/material";
-import ModeEditOutlineIcon from "@mui/icons-material/ModeEditOutline";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import toast from "react-hot-toast";
 import {
   getSingleProductService,
   getWarehousesService,
+  getProductStockByWarehouseService,
 } from "./services/products";
+import { getCategoriesService } from "./services/categories";
 
 export default function ProductForm({
   open,
@@ -37,18 +35,24 @@ export default function ProductForm({
   const [loading, setLoading] = useState(false);
   const [attributes, setAttributes] = useState({});
   const [warehouses, setWarehouses] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [warehouseStocks, setWarehouseStocks] = useState([]);
   const [readOnly, setReadOnly] = useState(isDetails && !isEdit);
   const [form, setForm] = useState({
     name: "",
     price: "",
     description: "",
+    categoryId: "", // 🔹 novo polje
   });
 
-  // Warehouses
   useEffect(() => {
     getWarehousesService()
       .then((data) => setWarehouses(data))
       .catch(() => toast.error("Neuspešno učitavanje skladišta."));
+
+    getCategoriesService()
+      .then((data) => setCategories(data))
+      .catch(() => toast.error("Neuspešno učitavanje kategorija."));
   }, []);
 
   const fillFrom = (data) => {
@@ -56,6 +60,7 @@ export default function ProductForm({
       name: data?.name || "",
       price: data?.price ?? "",
       description: data?.description || "",
+      categoryId: data?.categoryId || "", // 🔹 popuni ako postoji
     });
     if (data?.attributes) {
       setAttributes(data.attributes);
@@ -70,6 +75,7 @@ export default function ProductForm({
         name: "",
         price: "",
         description: "",
+        categoryId: "",
       });
       setAttributes({});
       setReadOnly(false);
@@ -78,18 +84,19 @@ export default function ProductForm({
 
     if (isDetails && productId != null) {
       setLoading(true);
-      getSingleProductService(productId)
-        .then((data) => {
-          fillFrom(data);
+      Promise.all([
+        getSingleProductService(productId),
+        getProductStockByWarehouseService(productId),
+      ])
+        .then(([productData, stockData]) => {
+          fillFrom(productData);
+          setWarehouseStocks(stockData);
           setReadOnly(true);
         })
-        .catch((err) =>
-          toast.error(err.message || "Neuspešno učitavanje proizvoda.")
-        )
+        .catch(() => toast.error("Neuspešno učitavanje proizvoda ili zaliha."))
         .finally(() => setLoading(false));
       return;
     }
-
     if (isEdit) {
       if (initialData) fillFrom(initialData);
       setReadOnly(false);
@@ -107,7 +114,11 @@ export default function ProductForm({
 
   const canSubmit = useMemo(() => {
     if (readOnly) return false;
-    return form.name.trim().length > 0 && String(form.price).length > 0;
+    return (
+      form.name.trim().length > 0 &&
+      String(form.price).length > 0 &&
+      !!form.categoryId
+    );
   }, [form, readOnly]);
 
   const handleChange = (field) => (e) => {
@@ -115,6 +126,7 @@ export default function ProductForm({
     setForm((f) => ({ ...f, [field]: v }));
   };
 
+  // --- postojeći atributi ---
   const attrEntries = Object.entries(attributes);
   const setAttrKeyByIndex = (index, newKey) => {
     const [oldKey, val] = attrEntries[index] || [];
@@ -149,6 +161,7 @@ export default function ProductForm({
         name: form.name.trim(),
         price: Number(form.price),
         description: form.description?.trim() || "",
+        categoryId: form.categoryId, // 🔹 šaljemo kategoriju
         attributes,
       };
       await onSubmit(payload);
@@ -157,6 +170,7 @@ export default function ProductForm({
           name: "",
           price: "",
           description: "",
+          categoryId: "",
         });
         setAttributes({});
       }
@@ -207,6 +221,7 @@ export default function ProductForm({
               fullWidth
               disabled={readOnly}
             />
+
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField
                 label="Cena"
@@ -216,6 +231,22 @@ export default function ProductForm({
                 fullWidth
                 disabled={readOnly}
               />
+
+              <TextField
+                select
+                label="Kategorija"
+                value={form.categoryId}
+                onChange={handleChange("categoryId")}
+                fullWidth
+                disabled={readOnly}
+              >
+                <MenuItem value="">-- Izaberi kategoriju --</MenuItem>
+                {categories.map((cat) => (
+                  <MenuItem key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </MenuItem>
+                ))}
+              </TextField>
             </Stack>
 
             <TextField
@@ -270,7 +301,7 @@ export default function ProductForm({
                   <Stack spacing={1}>
                     {attrEntries.map(([k, v], idx) => (
                       <Stack
-                        key={idx} // ✅ stabilan ključ
+                        key={idx}
                         direction="row"
                         spacing={1}
                         alignItems="center"
@@ -311,6 +342,46 @@ export default function ProductForm({
               </Box>
             )}
           </Stack>
+        )}
+
+        {isDetails && (
+          <Box
+            sx={{
+              borderTop: "1px solid rgba(255,255,255,0.1)",
+              mt: 2,
+              pt: 2,
+            }}
+          >
+            <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
+              Stanje po skladištima
+            </Typography>
+
+            {warehouseStocks.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                Nema podataka o zalihama.
+              </Typography>
+            ) : (
+              <Stack spacing={1}>
+                {warehouseStocks.map((w) => (
+                  <Box
+                    key={w.warehouseId}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      backgroundColor: "rgba(255,255,255,0.05)",
+                      borderRadius: 1,
+                      p: 1,
+                    }}
+                  >
+                    <Typography>{w.warehouseName}</Typography>
+                    <Typography fontWeight={600}>
+                      {w.stockQuantity} kom
+                    </Typography>
+                  </Box>
+                ))}
+              </Stack>
+            )}
+          </Box>
         )}
       </DialogContent>
       <DialogActions>

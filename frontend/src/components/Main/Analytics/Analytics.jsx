@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Box, Grid, Typography } from "@mui/material";
+import { Box, Grid, Typography, Button } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
 import FilterBar from "./subcomponents/FilterBar";
@@ -23,6 +24,8 @@ import { useAuthStore } from "../../../store/auth";
 export default function Analytics() {
   const [mode, setMode] = useState("preset"); // "preset" | "custom"
   const [presetDays, setPresetDays] = useState(7);
+
+  const navigate = useNavigate();
 
   const [range, setRange] = useState({
     from: dayjs().startOf("month").toDate(),
@@ -89,8 +92,18 @@ export default function Analytics() {
 
   const handleEtl = async () => {
     try {
-      const res = await runEtl();
-      toast.success(`ETL pokrenut (${res.written} zapisa).`);
+      let from = range.from;
+      let to = range.to;
+
+      if (mode === "preset") {
+        to = new Date();
+        from = dayjs(to).subtract(presetDays, "day").toDate();
+      }
+
+      console.log("Pokrećem ETL za period:", from, "→", to);
+
+      const res = await runEtl(from, to);
+      toast.success(`ETL pokrenut (${res?.written ?? 0} zapisa).`);
       await loadAll();
     } catch (err) {
       toast.error(err.message || "Greška pri pokretanju ETL-a.");
@@ -121,18 +134,30 @@ export default function Analytics() {
           onRefresh={handleEtl}
           canRefresh={canRefresh}
         />
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => navigate("/analytics/reports")}
+          sx={{ ml: "auto" }} // gura ga na desnu stranu
+        >
+          📊 Open Reports Page
+        </Button>
       </Box>
 
       {overview && (
         <Grid container spacing={2} my={2}>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} md={3} justifyContent="center">
             <KpiCard
               title="Total sales"
-              value={`${overview.totalSales.toFixed(2)} €`}
+              value={`${overview.totalSales.toLocaleString("de-DE", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })} €`}
               color="#1976d2"
             />
           </Grid>
-          <Grid item xs={12} md={3}>
+
+          <Grid item xs={12} md={3} justifyContent="center">
             <KpiCard
               title="Total orders"
               value={overview.totalOrders}

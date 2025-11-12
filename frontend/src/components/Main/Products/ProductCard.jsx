@@ -6,6 +6,7 @@ import {
   IconButton,
   Chip,
   Tooltip,
+  Stack,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -72,13 +73,23 @@ export default function ProductCard({ product, onEdit, onDelete, onDetails }) {
           {product.description || "Bez opisa"}
         </Typography>
 
-        {/* Status */}
-        <Chip
-          label="Na stanju"
-          color="success"
-          size="small"
-          sx={{ alignSelf: "flex-start", fontWeight: 500 }}
-        />
+        {/* Status + Kategorija */}
+        <Stack direction="row" spacing={1}>
+          <Chip
+            label="Na stanju"
+            color="success"
+            size="small"
+            sx={{ fontWeight: 500 }}
+          />
+          {product.categoryName && (
+            <Chip
+              label={product.categoryName}
+              color="info"
+              size="small"
+              sx={{ fontWeight: 500 }}
+            />
+          )}
+        </Stack>
 
         {/* Cena */}
         <Typography

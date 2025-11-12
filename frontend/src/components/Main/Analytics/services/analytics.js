@@ -114,12 +114,15 @@ export const getTopProducts = async (from, to) => {
   }
 };
 
-export const runEtl = async () => {
+export const runEtl = async (from, to) => {
   try {
     const res = await axios.post(
       `${BASE_URL}/api/Analytics/etl/run`,
       {},
-      { headers: { ...getAuthHeaders() } }
+      {
+        headers: { ...getAuthHeaders() },
+        params: { from, to },
+      }
     );
     return res.data;
   } catch (error) {

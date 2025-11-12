@@ -13,13 +13,6 @@ import {
 export default function useNavLinks(role) {
   const all = [
     {
-      section: "General",
-      to: "/dashboard",
-      label: "Dashboard",
-      icon: LayoutDashboard,
-      roles: [ROLES.ADMIN, ROLES.REFERENT, ROLES.MENADZER],
-    },
-    {
       section: "Operations",
       to: "/products",
       label: "Artikli",

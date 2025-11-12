@@ -9,6 +9,9 @@ import Warehouse from "./pages/Warehouse";
 import WarehouseDetails from "./pages/WarehouseDetails";
 import OrdersPage from "./pages/Orders";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import AnalyticsReportsPage from "./pages/AnalyticsReportsPage";
+import RegisterPage from "./pages/Register";
+import UsersAdminPage from "./pages/UsersAdminPage";
 import "./utils/axiosConfig";
 
 export default function App() {
@@ -24,16 +27,20 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
         </Route>
 
-        <Route element={<RequireAuth allowed={["Admin"]} />}>
-          <Route path="/users" element={<div>Users</div>} />
-        </Route>
-
-        <Route element={<RequireAuth allowed={["Referent", "Menadžer"]} />}>
+        <Route
+          element={<RequireAuth allowed={["Referent", "Menadžer", "Admin"]} />}
+        >
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/warehouse" element={<Warehouse />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/analytics/reports" element={<AnalyticsReportsPage />} />
           <Route path="/warehouse/:id" element={<WarehouseDetails />} />
+        </Route>
+
+        <Route element={<RequireAuth allowed={["Admin"]} />}>
+          <Route path="/admin/register" element={<RegisterPage />} />
+          <Route path="/users" element={<UsersAdminPage />} />
         </Route>
       </Route>
 

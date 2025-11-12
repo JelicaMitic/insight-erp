@@ -2,9 +2,9 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 const DEFAULT_REDIRECT = {
-  Admin: "/users",
+  Admin: "/analytics",
   Referent: "/products",
-  Menadžer: "/dashboard",
+  Menadžer: "/analytics",
 };
 
 export const useAuthStore = create(

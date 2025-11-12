@@ -98,3 +98,17 @@ export const deleteProductService = async (id) => {
     return handleAxiosError(error);
   }
 };
+
+export const getProductStockByWarehouseService = async (productId) => {
+  try {
+    const res = await axios.get(
+      `${BASE_URL}/api/products/${productId}/warehouses`,
+      {
+        headers: getAuthHeaders(),
+      }
+    );
+    return res.data || [];
+  } catch (error) {
+    return handleAxiosError(error);
+  }
+};

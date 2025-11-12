@@ -21,11 +21,10 @@ import {
 
 const drawerWidth = 200;
 const nav = [
-  { to: "/dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
+  { to: "/analytics", label: "Analytics", icon: <BarChart3 size={20} /> },
   { to: "/products", label: "Products", icon: <Package size={20} /> },
   { to: "/warehouse", label: "Warehouse", icon: <Boxes size={20} /> },
   { to: "/orders", label: "Orders", icon: <Receipt size={20} /> },
-  { to: "/analytics", label: "Analytics", icon: <BarChart3 size={20} /> },
   { to: "/users", label: "Users", icon: <Users size={20} /> },
 ];
 
