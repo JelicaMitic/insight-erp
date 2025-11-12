@@ -18,7 +18,12 @@ public class ProductsService : IProductsService
 
     public async Task<List<ProductListItemDto>> GetAllAsync(CancellationToken ct = default)
     {
-        var items = await _db.Products.AsNoTracking().OrderBy(x => x.Name).ToListAsync(ct);
+        var items = await _db.Products
+            .AsNoTracking()
+            .Include(x => x.Category)
+            .OrderBy(x => x.Name)
+            .ToListAsync(ct);
+
         var ids = items.Select(x => x.Id).ToList();
 
         var docs = await _mongo.ProductCatalog
@@ -31,6 +36,8 @@ public class ProductsService : IProductsService
             Id = p.Id,
             Name = p.Name,
             Price = p.Price,
+            CategoryId = p.CategoryId,
+            CategoryName = p.Category?.Name,
             Description = map.TryGetValue(p.Id, out var d) ? d.Description : null
         }).ToList();
     }
@@ -56,7 +63,11 @@ public class ProductsService : IProductsService
 
     public async Task<ProductDetailedDto?> GetByIdAsync(int id, CancellationToken ct = default)
     {
-        var p = await _db.Products.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
+        var p = await _db.Products
+            .AsNoTracking()
+            .Include(x => x.Category)
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
+
         if (p == null) return null;
 
         var doc = await _mongo.ProductCatalog.Find(x => x.ProductId == id).FirstOrDefaultAsync(ct);
@@ -66,6 +77,8 @@ public class ProductsService : IProductsService
             Id = p.Id,
             Name = p.Name,
             Price = p.Price,
+            CategoryId = p.CategoryId,
+            CategoryName = p.Category?.Name,
             Description = doc?.Description,
             Attributes = doc?.Attributes?
            .ToDictionary(
@@ -83,7 +96,8 @@ public class ProductsService : IProductsService
         var p = new Product
         {
             Name = dto.Name,
-            Price = dto.Price
+            Price = dto.Price,
+            CategoryId = dto.CategoryId
         };
         _db.Products.Add(p);
         await _db.SaveChangesAsync(ct); 
@@ -94,7 +108,9 @@ public class ProductsService : IProductsService
             {
                 ProductId = p.Id,
                 Description = dto.Description,
-                Attributes = dto.Attributes != null
+                Attributes = dto.Attributes != null 
+                
+
          ? new BsonDocument(
              dto.Attributes.ToDictionary(
                  kvp => kvp.Key,
@@ -134,6 +150,7 @@ public class ProductsService : IProductsService
 
         p.Name = dto.Name;
         p.Price = dto.Price;
+        p.CategoryId = dto.CategoryId;
 
         await _db.SaveChangesAsync(ct);
 
@@ -172,4 +189,18 @@ public class ProductsService : IProductsService
         await _mongo.ProductCatalog.DeleteOneAsync(x => x.ProductId == id, ct);
         return existing;
     }
+
+    public async Task<IEnumerable<ProductWarehouseDto>> GetProductStockByWarehouseAsync(int productId)
+    {
+        return await _db.WarehouseProducts
+            .Where(wp => wp.ProductId == productId)
+            .Select(wp => new ProductWarehouseDto
+            {
+                WarehouseId = wp.WarehouseId,
+                WarehouseName = wp.Warehouse.Name,
+                StockQuantity = wp.StockQuantity
+            })
+            .ToListAsync();
+    }
+
 }

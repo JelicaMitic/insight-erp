@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Diagnostics;
 using StackExchange.Redis;
+using InsightErp.Api.Services.Products;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +32,8 @@ builder.Services.AddScoped<IInvoicesService, InvoicesService>();
 builder.Services.AddScoped<IAnalyticsEtlService, AnalyticsEtlService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 builder.Services.AddHostedService<AnalyticsEtlHostedService>();
+builder.Services.AddScoped<IProductCategoriesService, ProductCategoriesService>();
+
 
 
 

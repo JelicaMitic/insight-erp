@@ -10,6 +10,9 @@ public class ProductListItemDto
     public string? Description { get; set; }
     public int StockQuantity { get; set; }
     public int MinQuantity { get; set; }
+    public int? CategoryId { get; set; }
+    public string? CategoryName { get; set; }
+    
 }
 
 public class ProductDetailedDto : ProductListItemDto
@@ -25,8 +28,8 @@ public class CreateProductDto
     [Required(ErrorMessage = "Cena proizvoda je obavezna.")]
     [Range(0.01, double.MaxValue, ErrorMessage = "Cena mora biti veæa od nule.")]
     public decimal Price { get; set; }
-   
 
+    public int? CategoryId { get; set; }
     public string? Description { get; set; }
     public Dictionary<string, object>? Attributes { get; set; }
 }

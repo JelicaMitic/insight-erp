@@ -9,4 +9,5 @@ public interface IProductsService
     Task<ProductDetailedDto> CreateAsync(CreateProductDto dto, CancellationToken ct = default);
     Task<ProductDetailedDto?> UpdateAsync(int id, UpdateProductDto dto, CancellationToken ct = default);
     Task<ProductDetailedDto?> DeleteAsync(int id, CancellationToken ct = default);
+    Task<IEnumerable<ProductWarehouseDto>> GetProductStockByWarehouseAsync(int productId);
 }

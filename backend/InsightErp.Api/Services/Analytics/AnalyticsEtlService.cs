@@ -25,77 +25,6 @@ public class AnalyticsEtlService : IAnalyticsEtlService
         return RunAsync(d, d, ct);
     }
 
-    //public async Task<int> RunAsync(DateTime from, DateTime to, CancellationToken ct = default)
-    //{
-    //    using var sql = new SqlConnection(_cfg.GetConnectionString("DefaultConnection"));
-    //    await sql.OpenAsync(ct);
-
-    //    // Očisti Redis keš za analitiku
-    //    await _cache.RemoveByPrefixAsync("analytics:");
-
-    //    using var multi = await sql.QueryMultipleAsync(
-    //        "dbo.usp_BuildSalesAggregates",
-    //        new { From = from.Date, To = to.Date },
-    //        commandType: CommandType.StoredProcedure);
-
-    //    var daily = (await multi.ReadAsync<(DateTime SalesDate, decimal TotalSales, int TotalOrders, int UniqueCustomers)>()).ToList();
-    //    var byWh = (await multi.ReadAsync<(DateTime SalesDate, int WarehouseId, string WarehouseName, decimal Revenue)>()).ToList();
-    //    var top = (await multi.ReadAsync<(DateTime SalesDate, int ProductId, string ProductName, int Quantity, decimal Revenue)>()).ToList();
-
-    //    var etlRunId = DateTime.UtcNow;
-    //    var ops = new List<WriteModel<SalesAggregateDocument>>();
-
-    //    foreach (var d in daily)
-    //    {
-    //        var date = DateTime.SpecifyKind(d.SalesDate.Date, DateTimeKind.Utc);
-
-    //        var salesByWarehouse = byWh
-    //            .Where(x => x.SalesDate.Date == date)
-    //            .Select(x => new WarehouseSalesEmbedded
-    //            {
-    //                WarehouseId = x.WarehouseId,
-    //                Name = x.WarehouseName,
-    //                Revenue = x.Revenue
-    //            }).ToList();
-
-    //        var topProducts = top
-    //            .Where(t => t.SalesDate.Date == date)
-    //            .OrderByDescending(t => t.Revenue)
-    //            .Take(10)
-    //            .Select(t => new TopProductEmbedded
-    //            {
-    //                ProductId = t.ProductId,
-    //                Name = t.ProductName,
-    //                Quantity = t.Quantity,
-    //                Revenue = t.Revenue
-    //            }).ToList();
-
-    //        var filter = Builders<SalesAggregateDocument>.Filter.Eq(x => x.Date, date);
-
-    //        var update = Builders<SalesAggregateDocument>.Update
-    //            .Set(x => x.TotalSales, d.TotalSales)
-    //            .Set(x => x.TotalOrders, d.TotalOrders)
-    //            .Set(x => x.UniqueCustomers, d.UniqueCustomers)
-    //            .Set(x => x.SalesByWarehouse, salesByWarehouse)
-    //            .Set(x => x.TopProducts, topProducts)
-    //            .Set(x => x.EtlRunId, etlRunId)
-    //            .SetOnInsert(x => x.Date, date);
-
-    //        ops.Add(new UpdateOneModel<SalesAggregateDocument>(filter, update) { IsUpsert = true });
-    //    }
-
-    //    if (ops.Any())
-    //        await _mongo.SalesAggregates.BulkWriteAsync(ops, new BulkWriteOptions { IsOrdered = false }, ct);
-
-    //    Console.WriteLine($"[ETL] Run {etlRunId:u} - Aggregates upserted: {ops.Count}");
-
-    //    // Nakon što se ETL završi, izračunaj presetove (7, 30, 365)
-    //    await BuildPresetsAsync(ct);
-
-
-
-    //    return ops.Count;
-    //}
     public async Task<int> RunAsync(DateTime from, DateTime to, CancellationToken ct = default)
     {
         using var sql = new SqlConnection(_cfg.GetConnectionString("DefaultConnection"));
@@ -157,12 +86,10 @@ public class AnalyticsEtlService : IAnalyticsEtlService
 
         Console.WriteLine($"[ETL] Run {etlRunId:u} - Aggregates upserted: {ops.Count}");
 
-        // 👇 OVDE ide purge pa preset build
         await _cache.RemoveByPrefixAsync("analytics:overview:");
         await _cache.RemoveByPrefixAsync("analytics:trend:");
-        // (opciono) ako želiš “čisto”: await _cache.RemoveByPrefixAsync("analytics:preset:");
 
-        await BuildPresetsAsync(ct); // popunjava analytics:preset:{7d,30d,365d}
+        await BuildPresetsAsync(ct);
 
         return ops.Count;
     }

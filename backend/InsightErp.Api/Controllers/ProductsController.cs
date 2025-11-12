@@ -62,4 +62,14 @@ public class ProductsController : ControllerBase
         var deleted = await _svc.DeleteAsync(id, ct);
         return deleted == null ? NotFound() : Ok(deleted);
     }
+
+
+    [HttpGet("{id:int}/warehouses")]
+    [Authorize(Roles = "Admin,Referent,Menadzer")]
+    public async Task<IActionResult> GetProductStockByWarehouse(int id)
+    {
+        var result = await _svc.GetProductStockByWarehouseAsync(id);
+        return Ok(result);
+    }
+
 }

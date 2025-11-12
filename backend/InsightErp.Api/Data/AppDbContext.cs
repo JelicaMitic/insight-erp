@@ -22,6 +22,7 @@ public class AppDbContext : DbContext
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<Invoice> Invoices { get; set; }
     public DbSet<Customer> Customers { get; set; }
+    public DbSet<ProductCategory> ProductCategories { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder b)
@@ -39,6 +40,14 @@ public class AppDbContext : DbContext
         b.Entity<User>()
          .HasIndex(u => u.Username)
          .IsUnique();
+
+        b.Entity<ProductCategory>(e =>
+        {
+            e.ToTable("ProductCategories");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name).HasMaxLength(100).IsRequired();
+            e.HasIndex(x => x.Name).IsUnique();
+        });
 
         b.Entity<Product>(e =>
         {
@@ -89,6 +98,13 @@ public class AppDbContext : DbContext
             .WithOne(o => o.Invoice)
             .HasForeignKey<Invoice>(i => i.OrderId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        b.Entity<Product>()
+            .HasOne(p => p.Category)
+            .WithMany(c => c.Products)
+            .HasForeignKey(p => p.CategoryId)
+            .OnDelete(DeleteBehavior.SetNull);
+
 
         b.Entity<Product>().Property(p => p.Price).HasColumnType("decimal(18,2)");
         b.Entity<Order>().Property(o => o.TotalAmount).HasColumnType("decimal(18,2)");
