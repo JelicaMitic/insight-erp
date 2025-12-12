@@ -13,7 +13,7 @@ export default function SalesTrendChart({ data }) {
     <ResponsiveContainer width="100%" height={320}>
       <LineChart
         data={data}
-        margin={{ top: 8, right: 16, bottom: 8, left: 24 }} // ← bitno
+        margin={{ top: 8, right: 16, bottom: 8, left: 24 }}
       >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="date" tickMargin={8} minTickGap={24} />

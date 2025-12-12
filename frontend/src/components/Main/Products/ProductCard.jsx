@@ -43,7 +43,6 @@ export default function ProductCard({ product, onEdit, onDelete, onDetails }) {
           p: 1.5,
         }}
       >
-        {/* Naziv */}
         <Typography
           variant="subtitle1"
           fontWeight={700}
@@ -56,7 +55,6 @@ export default function ProductCard({ product, onEdit, onDelete, onDetails }) {
           {product.name}
         </Typography>
 
-        {/* Opis */}
         <Typography
           variant="body2"
           color="text.secondary"
@@ -73,7 +71,6 @@ export default function ProductCard({ product, onEdit, onDelete, onDetails }) {
           {product.description || "Bez opisa"}
         </Typography>
 
-        {/* Status + Kategorija */}
         <Stack direction="row" spacing={1}>
           <Chip
             label="Na stanju"
@@ -91,7 +88,6 @@ export default function ProductCard({ product, onEdit, onDelete, onDetails }) {
           )}
         </Stack>
 
-        {/* Cena */}
         <Typography
           variant="h6"
           sx={{
@@ -108,7 +104,6 @@ export default function ProductCard({ product, onEdit, onDelete, onDetails }) {
         </Typography>
       </CardContent>
 
-      {/* Akcije */}
       <CardActions
         sx={{
           justifyContent: "flex-end",

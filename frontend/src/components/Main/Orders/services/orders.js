@@ -110,7 +110,7 @@ export const downloadInvoicePdfService = async (invoiceId) => {
   const response = await axios.get(
     `${import.meta.env.VITE_BACK_BASE_URL}/api/invoices/${invoiceId}/pdf`,
     {
-      responseType: "blob", // 👈 ključno!
+      responseType: "blob",
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -119,5 +119,5 @@ export const downloadInvoicePdfService = async (invoiceId) => {
 
   const blob = new Blob([response.data], { type: "application/pdf" });
   const url = window.URL.createObjectURL(blob);
-  window.open(url, "_blank"); // 👈 otvara kao pravi PDF u novom tabu
+  window.open(url, "_blank");
 };

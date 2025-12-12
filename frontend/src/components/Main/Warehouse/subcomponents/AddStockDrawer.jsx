@@ -71,7 +71,7 @@ export default function AddStockDrawer({
     <Drawer anchor="right" open={open} onClose={onClose}>
       <Box width={400} p={3}>
         <Typography variant="h6" mb={2}>
-          ➕ Dodaj proizvod u skladište
+          Dodaj proizvod u skladište
         </Typography>
 
         <Autocomplete
@@ -120,7 +120,7 @@ export default function AddStockDrawer({
           onClick={handleSubmit}
           disabled={!selectedProduct || !quantity}
         >
-          ✅ Dodaj u skladište
+          Dodaj u skladište
         </Button>
       </Box>
     </Drawer>

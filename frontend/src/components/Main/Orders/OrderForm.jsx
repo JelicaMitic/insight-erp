@@ -21,19 +21,63 @@ import {
   getProductsService,
   getWarehousesService,
 } from "./services/orders";
+import { getProductStockByWarehouseService } from "../Products/services/products";
 
 export default function OrderForm({ open, onClose, onSubmit }) {
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
+  const [stockMap, setStockMap] = useState({});
 
   const [form, setForm] = useState({
     customerId: "",
     warehouseId: "",
     items: [],
   });
+  useEffect(() => {
+    if (!open) return;
+    if (!form.warehouseId) return;
+    if (products.length === 0) return;
 
-  // Učitaj sve potrebne liste kada se dijalog otvori
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const warehouseId = Number(form.warehouseId);
+
+        const stockData = await Promise.all(
+          products.map(async (p) => {
+            const stockInfo = await getProductStockByWarehouseService(p.id);
+
+            const row = (stockInfo || []).find((s) => {
+              const wid = Number(s.warehouseId ?? s.WarehouseId);
+              return wid === warehouseId;
+            });
+
+            const stock = Number(row?.stockQuantity ?? row?.StockQuantity ?? 0);
+
+            return {
+              productId: p.id,
+              stock,
+            };
+          })
+        );
+
+        if (cancelled) return;
+
+        const map = {};
+        stockData.forEach((s) => (map[s.productId] = s.stock));
+        setStockMap(map);
+      } catch {
+        toast.error("Greška pri učitavanju stanja zaliha.");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, form.warehouseId, products]);
+
   useEffect(() => {
     if (!open) return;
     (async () => {
@@ -47,7 +91,6 @@ export default function OrderForm({ open, onClose, onSubmit }) {
         setProducts(ps);
         setWarehouses(ws);
 
-        // podrazumevano skladište (prvo dostupno) ako ništa nije izabrano
         setForm((f) => ({
           ...f,
           warehouseId: f.warehouseId || (ws[0]?.id ?? ""),
@@ -88,7 +131,7 @@ export default function OrderForm({ open, onClose, onSubmit }) {
 
     try {
       await createOrderService({
-        userId: 1, // TODO: zameni realnim userId iz auth-a
+        userId: 1,
         customerId: +form.customerId,
         warehouseId: +form.warehouseId,
         items: form.items.map((it) => ({
@@ -163,11 +206,43 @@ export default function OrderForm({ open, onClose, onSubmit }) {
                   }
                   sx={{ flex: 2 }}
                 >
-                  {products.map((p) => (
-                    <MenuItem key={p.id} value={p.id}>
-                      {p.name}
-                    </MenuItem>
-                  ))}
+                  {products
+                    .filter(
+                      (p) => stockMap[p.id] !== undefined && stockMap[p.id] > 0
+                    )
+
+                    .map((p) => (
+                      <MenuItem key={p.id} value={p.id}>
+                        <Box
+                          sx={{
+                            width: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 2,
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {p.name}
+                          </Typography>
+
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ flexShrink: 0 }}
+                          >
+                            stock: {stockMap[p.id]}
+                          </Typography>
+                        </Box>
+                      </MenuItem>
+                    ))}
                 </TextField>
 
                 <TextField

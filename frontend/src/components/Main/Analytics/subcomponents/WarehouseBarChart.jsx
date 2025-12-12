@@ -30,6 +30,7 @@ export default function WarehouseBarChart({ data }) {
               "Revenue",
             ]}
             labelFormatter={(name) => `Warehouse: ${name}`}
+            cursor={{ fill: "#5468986b", opacity: 1 }}
           />
           <Bar dataKey="revenue" fill="#4caf50" radius={[6, 6, 0, 0]} />
         </BarChart>

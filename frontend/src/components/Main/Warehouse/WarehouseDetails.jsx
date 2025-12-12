@@ -123,8 +123,8 @@ export default function WarehouseDetails() {
 
   return (
     <Box p={3}>
-      <Typography variant="h5" mb={3}>
-        🏭 {warehouse?.name || "Loading..."} — {warehouse?.location || ""}
+      <Typography variant="h4" mb={3}>
+        {warehouse?.name || "Loading..."} — {warehouse?.location || ""}
       </Typography>
 
       <Box
@@ -141,7 +141,7 @@ export default function WarehouseDetails() {
           onChange={(e) => setFilter(e.target.value)}
         />
         <Button variant="contained" onClick={() => setDrawerOpen(true)}>
-          ➕ Dodaj proizvod
+          Dodaj proizvod u skladište
         </Button>
       </Box>
 

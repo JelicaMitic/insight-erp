@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
-import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import RequireAuth from "./routes/RequireAuth";
@@ -13,6 +12,7 @@ import AnalyticsReportsPage from "./pages/AnalyticsReportsPage";
 import RegisterPage from "./pages/Register";
 import UsersAdminPage from "./pages/UsersAdminPage";
 import "./utils/axiosConfig";
+import BlankPage from "./pages/Blank";
 
 export default function App() {
   return (
@@ -21,15 +21,9 @@ export default function App() {
 
       <Route element={<MainLayout />}>
         <Route
-          element={<RequireAuth allowed={["Admin", "Referent", "Menadžer"]} />}
-        >
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Route>
-
-        <Route
           element={<RequireAuth allowed={["Referent", "Menadžer", "Admin"]} />}
         >
+          <Route path="/" element={<BlankPage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/warehouse" element={<Warehouse />} />
           <Route path="/orders" element={<OrdersPage />} />

@@ -69,7 +69,7 @@ export default function Warehouse() {
       align: "right",
       headerAlign: "right",
       valueFormatter: (params) =>
-        params.value ? params.value.toLocaleString("sr-RS") + " RSD" : "0 RSD",
+        params ? params.toLocaleString("sr-RS") + " RSD" : "0 RSD",
     },
     {
       field: "actions",
@@ -93,7 +93,7 @@ export default function Warehouse() {
   );
 
   return (
-    <Box p={3} sx={{ overflow: "hidden" }}>
+    <Box p={2} sx={{ overflow: "hidden" }}>
       <Box
         display="flex"
         justifyContent="space-between"

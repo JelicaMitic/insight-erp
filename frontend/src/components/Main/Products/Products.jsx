@@ -11,6 +11,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  TablePagination,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
@@ -24,14 +25,19 @@ import {
   updateProductService,
   deleteProductService,
 } from "./services/products";
-import { getCategoriesService } from "./services/categories"; // ✅ import kategorija
+import { getCategoriesService } from "./services/categories";
 
 export default function Products() {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
-  const [categories, setCategories] = useState([]); // 🔹 kategorije
-  const [selectedCategory, setSelectedCategory] = useState(""); // 🔹 izabrana kategorija
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [search, setSearch] = useState("");
+
+  const [sortBy, setSortBy] = useState("nameAsc");
+
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(12);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -39,7 +45,6 @@ export default function Products() {
   const [editing, setEditing] = useState(null);
   const [detailsId, setDetailsId] = useState(null);
 
-  // 🔄 Učitavanje proizvoda i kategorija
   useEffect(() => {
     (async () => {
       try {
@@ -48,6 +53,7 @@ export default function Products() {
           getProductsService(),
           getCategoriesService(),
         ]);
+
         setItems(Array.isArray(products) ? products : []);
         setCategories(Array.isArray(cats) ? cats : []);
       } catch (err) {
@@ -58,22 +64,20 @@ export default function Products() {
     })();
   }, []);
 
-  // ➕ Create
   const onCreate = async (payload) => {
     const created = await createProductService(payload);
     setItems((arr) => [created, ...arr]);
   };
 
-  // ✏️ Update
   const onUpdate = async (payload) => {
     if (!editing) return;
     const updated = await updateProductService(editing.id, payload);
+
     setItems((arr) =>
       arr.map((it) => (it.id === editing.id ? { ...it, ...updated } : it))
     );
   };
 
-  // ❌ Delete
   const onDelete = async (id) => {
     try {
       await deleteProductService(id);
@@ -94,19 +98,59 @@ export default function Products() {
     setDetailsOpen(true);
   };
 
-  // 🔍 Filter po imenu/opisu + kategoriji
-  const filteredItems = items.filter((p) => {
-    const matchesSearch =
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      (p.description || "").toLowerCase().includes(search.toLowerCase());
-    const matchesCategory =
-      !selectedCategory || p.categoryName === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredItems = items
+    .filter((p) => {
+      const matchesSearch =
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        (p.description || "").toLowerCase().includes(search.toLowerCase());
+
+      const matchesCategory =
+        !selectedCategory || p.categoryName === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "nameAsc":
+          return a.name.localeCompare(b.name);
+        case "nameDesc":
+          return b.name.localeCompare(a.name);
+        case "priceAsc":
+          return a.price - b.price;
+        case "priceDesc":
+          return b.price - a.price;
+        case "categoryAsc":
+          return a.categoryName.localeCompare(b.categoryName);
+        case "categoryDesc":
+          return b.categoryName.localeCompare(a.categoryName);
+        default:
+          return 0;
+      }
+    });
+
+  const paginatedItems =
+    rowsPerPage > 0
+      ? filteredItems.slice(
+          page * rowsPerPage,
+          page * rowsPerPage + rowsPerPage
+        )
+      : filteredItems;
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  useEffect(() => {
+    setPage(0);
+  }, [search, selectedCategory, sortBy]);
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header */}
       <Stack
         direction={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
@@ -127,7 +171,6 @@ export default function Products() {
         </Button>
       </Stack>
 
-      {/* Search + Category Filter */}
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 3 }}>
         <TextField
           placeholder="Pretraži proizvode..."
@@ -184,9 +227,41 @@ export default function Products() {
             ))}
           </Select>
         </FormControl>
+
+        <FormControl
+          size="small"
+          sx={{
+            minWidth: 200,
+            backgroundColor: "rgba(255,255,255,0.03)",
+            borderRadius: 3,
+          }}
+        >
+          <InputLabel id="sort-label" sx={{ color: "white" }}>
+            Sortiraj
+          </InputLabel>
+          <Select
+            labelId="sort-label"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            label="Sortiraj"
+            sx={{
+              color: "white",
+              ".MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(255,255,255,0.2)",
+              },
+              "& .MuiSvgIcon-root": { color: "white" },
+            }}
+          >
+            <MenuItem value="nameAsc">Naziv (A–Z)</MenuItem>
+            <MenuItem value="nameDesc">Naziv (Z–A)</MenuItem>
+            <MenuItem value="priceAsc">Cena (rast)</MenuItem>
+            <MenuItem value="priceDesc">Cena (opad)</MenuItem>
+            <MenuItem value="categoryAsc">Kategorija (A–Z)</MenuItem>
+            <MenuItem value="categoryDesc">Kategorija (Z–A)</MenuItem>
+          </Select>
+        </FormControl>
       </Stack>
 
-      {/* Main content */}
       {loading ? (
         <Typography variant="body2">Učitavanje...</Typography>
       ) : filteredItems.length === 0 ? (
@@ -194,29 +269,65 @@ export default function Products() {
           Nema proizvoda koji odgovaraju kriterijumu pretrage.
         </Typography>
       ) : (
-        <Grid container spacing={2} alignItems="stretch">
-          {filteredItems.map((p) => (
-            <Grid
-              key={p.id}
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              lg={4}
-              sx={{ display: "flex" }}
-            >
-              <ProductCard
-                product={p}
-                onEdit={openEdit}
-                onDelete={onDelete}
-                onDetails={openDetails}
-              />
-            </Grid>
-          ))}
-        </Grid>
+        <>
+          <Grid container spacing={2} alignItems="stretch">
+            {paginatedItems.map((p) => (
+              <Grid
+                key={p.id}
+                item
+                xs={12}
+                sm={6}
+                md={4}
+                lg={4}
+                sx={{ display: "flex" }}
+              >
+                <ProductCard
+                  product={p}
+                  onEdit={openEdit}
+                  onDelete={onDelete}
+                  onDetails={openDetails}
+                />
+              </Grid>
+            ))}
+          </Grid>
+
+          <TablePagination
+            component="div"
+            count={filteredItems.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Rows per page:"
+            rowsPerPageOptions={[12, 24, 48, 100]}
+            sx={{
+              mt: 2,
+              borderRadius: 2,
+              backgroundColor: "rgba(255,255,255,0.04)",
+              color: "white",
+              ".MuiTablePagination-toolbar": {
+                p: 1,
+              },
+              ".MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows":
+                {
+                  color: "white",
+                },
+              ".MuiInputBase-root": {
+                color: "white",
+                backgroundColor: "rgba(255,255,255,0.08)",
+                borderRadius: 1,
+              },
+              ".MuiSvgIcon-root": {
+                color: "white",
+              },
+              ".MuiTablePagination-actions button": {
+                color: "white",
+              },
+            }}
+          />
+        </>
       )}
 
-      {/* Forms */}
       <ProductForm
         open={createOpen}
         mode="create"

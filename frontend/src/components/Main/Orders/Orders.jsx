@@ -58,7 +58,7 @@ export default function Orders() {
       field: "date",
       headerName: "Datum",
       width: 180,
-      valueGetter: (params) => params || "", // bezbedan pristup
+      valueGetter: (params) => params || "",
       renderCell: (params) => {
         const raw = params?.value;
         if (!raw) return "";
@@ -124,7 +124,7 @@ export default function Orders() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              height: "100%", // ključni deo
+              height: "100%",
               width: "100%",
             }}
           >

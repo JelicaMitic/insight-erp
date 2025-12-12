@@ -11,6 +11,7 @@ import {
   CircularProgress,
   Box,
   MenuItem,
+  Collapse,
 } from "@mui/material";
 import toast from "react-hot-toast";
 import {
@@ -19,6 +20,7 @@ import {
   getProductStockByWarehouseService,
 } from "./services/products";
 import { getCategoriesService } from "./services/categories";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 export default function ProductForm({
   open,
@@ -38,11 +40,12 @@ export default function ProductForm({
   const [categories, setCategories] = useState([]);
   const [warehouseStocks, setWarehouseStocks] = useState([]);
   const [readOnly, setReadOnly] = useState(isDetails && !isEdit);
+  const [stockOpen, setStockOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
     price: "",
     description: "",
-    categoryId: "", // 🔹 novo polje
+    categoryId: "",
   });
 
   useEffect(() => {
@@ -60,7 +63,7 @@ export default function ProductForm({
       name: data?.name || "",
       price: data?.price ?? "",
       description: data?.description || "",
-      categoryId: data?.categoryId || "", // 🔹 popuni ako postoji
+      categoryId: data?.categoryId || "",
     });
     if (data?.attributes) {
       setAttributes(data.attributes);
@@ -161,7 +164,7 @@ export default function ProductForm({
         name: form.name.trim(),
         price: Number(form.price),
         description: form.description?.trim() || "",
-        categoryId: form.categoryId, // 🔹 šaljemo kategoriju
+        categoryId: form.categoryId,
         attributes,
       };
       await onSubmit(payload);
@@ -352,35 +355,56 @@ export default function ProductForm({
               pt: 2,
             }}
           >
-            <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
-              Stanje po skladištima
-            </Typography>
-
-            {warehouseStocks.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">
-                Nema podataka o zalihama.
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              sx={{ cursor: "pointer", mb: 1 }}
+              onClick={() => setStockOpen((o) => !o)}
+            >
+              <Typography variant="subtitle1" fontWeight={600}>
+                Proveri stanje po skladištima
               </Typography>
-            ) : (
-              <Stack spacing={1}>
-                {warehouseStocks.map((w) => (
-                  <Box
-                    key={w.warehouseId}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      backgroundColor: "rgba(255,255,255,0.05)",
-                      borderRadius: 1,
-                      p: 1,
-                    }}
-                  >
-                    <Typography>{w.warehouseName}</Typography>
-                    <Typography fontWeight={600}>
-                      {w.stockQuantity} kom
-                    </Typography>
-                  </Box>
-                ))}
-              </Stack>
-            )}
+
+              <KeyboardArrowDownIcon
+                sx={{
+                  transition: "0.25s",
+                  transform: stockOpen ? "rotate(180deg)" : "rotate(0deg)",
+                }}
+              />
+            </Stack>
+
+            <Collapse in={stockOpen} timeout="300">
+              {warehouseStocks.length === 0 ? (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1 }}
+                >
+                  Nema podataka o zalihama.
+                </Typography>
+              ) : (
+                <Stack spacing={1} sx={{ pb: 1 }}>
+                  {warehouseStocks.map((w) => (
+                    <Box
+                      key={w.warehouseId}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        borderRadius: 1,
+                        p: 1,
+                      }}
+                    >
+                      <Typography>{w.warehouseName}</Typography>
+                      <Typography fontWeight={600}>
+                        {w.stockQuantity} kom
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+              )}
+            </Collapse>
           </Box>
         )}
       </DialogContent>

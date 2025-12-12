@@ -3,18 +3,6 @@ import { Box, Button, Stack, TextField } from "@mui/material";
 import dayjs from "dayjs";
 import { useState, useEffect } from "react";
 
-/**
- * Props:
- * - mode: "preset" | "custom"
- * - days: 7 | 30 | 365
- * - from: Date
- * - to: Date
- * - onPreset(daysOrCustom)  // 7|30|365 ili "custom"
- * - onCustomChange({ from, to }) // dok korisnik menja polja
- * - onApplyCustom(from, to)      // klik na "Primeni"
- * - onRefresh()                  // dugme za ETL refresh
- * - canRefresh: boolean          // da li da prikaže dugme
- */
 export default function FilterBar({
   mode,
   days,

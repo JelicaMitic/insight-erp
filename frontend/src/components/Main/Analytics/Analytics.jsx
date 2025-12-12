@@ -39,6 +39,12 @@ export default function Analytics() {
 
   const canRefresh = useAuthStore((s) => s.hasRole(["Admin"]));
 
+  const fmtCurrency = (n) =>
+    (n ?? 0).toLocaleString("de-DE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
   const loadAll = async () => {
     try {
       let ov, tr, wh, tp;
@@ -134,14 +140,6 @@ export default function Analytics() {
           onRefresh={handleEtl}
           canRefresh={canRefresh}
         />
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => navigate("/analytics/reports")}
-          sx={{ ml: "auto" }} // gura ga na desnu stranu
-        >
-          📊 Open Reports Page
-        </Button>
       </Box>
 
       {overview && (
@@ -152,7 +150,7 @@ export default function Analytics() {
               value={`${overview.totalSales.toLocaleString("de-DE", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-              })} €`}
+              })} RSD`}
               color="#1976d2"
             />
           </Grid>
@@ -164,18 +162,19 @@ export default function Analytics() {
               color="#4caf50"
             />
           </Grid>
-          <Grid item xs={12} md={3}>
-            <KpiCard
-              title="Unique customers"
-              value={overview.uniqueCustomers}
-              color="#ff9800"
-            />
-          </Grid>
+
           <Grid item xs={12} md={3}>
             <KpiCard
               title="Low stock items"
               value={overview.lowStockCount}
               color="#f44336"
+            />
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <KpiCard
+              title="Average order value"
+              value={`${fmtCurrency(overview.averageOrderValue)} RSD`}
+              subtitle="= Total sales / Total orders"
             />
           </Grid>
         </Grid>

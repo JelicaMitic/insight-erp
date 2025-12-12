@@ -18,7 +18,7 @@ export default function Breadcrumbs() {
       aria-label="breadcrumbs"
       className="flex items-center gap-2 text-sm opacity-80"
     >
-      <Link to="/dashboard" className="hover:underline">
+      <Link to="/products" className="hover:underline">
         Home
       </Link>
       {crumbs.map((c, i) => (

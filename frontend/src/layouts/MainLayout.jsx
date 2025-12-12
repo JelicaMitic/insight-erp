@@ -10,14 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import Topbar from "../components/Topbar";
-import {
-  LayoutDashboard,
-  Package,
-  Boxes,
-  Receipt,
-  BarChart3,
-  Users,
-} from "lucide-react";
+import { Package, Boxes, Receipt, BarChart3, Users } from "lucide-react";
 
 const drawerWidth = 200;
 const nav = [

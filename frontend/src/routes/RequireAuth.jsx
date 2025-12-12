@@ -13,9 +13,9 @@ export default function RequireAuth({ allowed = [] }) {
     const map = {
       Admin: "/users",
       Referent: "/products",
-      Menadžer: "/dashboard",
+      Menadžer: "/analytics",
     };
-    return <Navigate to={map[user.role] || "/dashboard"} replace />;
+    return <Navigate to={map[user.role] || "/analytics"} replace />;
   }
 
   return <Outlet />;

@@ -15,7 +15,7 @@ export default function TopProductsChart({ data }) {
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis type="number" />
         <YAxis dataKey="name" type="category" width={120} />
-        <Tooltip />
+        <Tooltip cursor={{ fill: "#5468986b", opacity: 1 }} />
         <Bar dataKey="revenue" fill="#ff9800" />
       </BarChart>
     </ResponsiveContainer>

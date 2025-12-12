@@ -32,7 +32,7 @@ export const useAuthStore = create(
       redirectForRole: () => {
         const u = get().user;
         if (!u) return "/login";
-        return DEFAULT_REDIRECT[u.role] ?? "/dashboard";
+        return DEFAULT_REDIRECT[u.role] ?? "/analytics";
       },
     }),
     { name: "erp.auth" }

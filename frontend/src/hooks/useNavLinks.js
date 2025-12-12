@@ -1,6 +1,5 @@
 import { ROLES } from "../utils/roles";
 import {
-  LayoutDashboard,
   BarChart3,
   Package,
   Boxes,
