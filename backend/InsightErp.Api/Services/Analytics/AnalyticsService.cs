@@ -26,16 +26,30 @@ public class AnalyticsService : IAnalyticsService
     {
         var key = $"analytics:preset:{days}d";
         var cached = await _cache.GetAsync<AnalyticsOverviewDto>(key);
-        if (cached != null) return cached;
 
-       
-        var now = DateTime.UtcNow.Date;
-        var from = now.AddDays(-days);
-        var dto = await GetOverviewAsync(from, now, ct);
+        
+        var to = DateTime.UtcNow.Date;
+        var from = to.AddDays(-days);
 
-        await _cache.SetAsync(key, dto, TimeSpan.FromHours(24));
-        return dto;
+        if (cached != null)
+        {
+           
+            cached.From = from;
+            cached.To = to;
+
+            
+            cached.LowStockCount = await _db.WarehouseProducts
+                .CountAsync(x => x.StockQuantity <= x.MinQuantity, ct);
+
+            if (cached.AverageOrderValue == 0 && cached.TotalOrders > 0)
+                cached.AverageOrderValue = cached.TotalSales / cached.TotalOrders;
+
+            return cached;
+        }
+
+        return await GetOverviewAsync(from, to, ct);
     }
+
 
     public async Task<AnalyticsOverviewDto> GetOverviewAsync(DateTime from, DateTime to, CancellationToken ct = default)
     {
@@ -63,6 +77,10 @@ public class AnalyticsService : IAnalyticsService
             UniqueCustomers = uniqueCustomers,
             LowStockCount = await _db.WarehouseProducts.CountAsync(x => x.StockQuantity <= x.MinQuantity, ct)
         };
+
+        dto.AverageOrderValue = dto.TotalOrders > 0
+            ? dto.TotalSales / dto.TotalOrders
+            : 0m;
 
         await _cache.SetAsync(key, dto, TimeSpan.FromHours(12));
         return dto;

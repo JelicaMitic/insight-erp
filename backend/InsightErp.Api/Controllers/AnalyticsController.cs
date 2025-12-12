@@ -87,12 +87,31 @@ public class AnalyticsController : ControllerBase
     }
 
     [HttpPost("etl/run")]
-    [Authorize(Roles = "Admin")] 
-    public async Task<object> RunEtl([FromQuery] DateTime? from = null, [FromQuery] DateTime? to = null, CancellationToken ct = default)
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> RunEtl(
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null,
+        CancellationToken ct = default)
     {
-        int written = (from.HasValue && to.HasValue)
-            ? await _etl.RunAsync(from.Value.Date, to.Value.Date, ct)
-            : await _etl.RunYesterdayAsync(ct);
-        return new { written };
+        if (from.HasValue != to.HasValue)
+            return BadRequest("Both 'from' and 'to' must be provided together.");
+
+        try
+        {
+            int written = (from.HasValue && to.HasValue)
+                ? await _etl.RunAsync(from.Value.Date, to.Value.Date, ct)
+                : await _etl.RunYesterdayAsync(ct);
+
+            return Ok(new { written });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
+
 }

@@ -6,6 +6,7 @@
     public int TotalOrders { get; set; }
     public int UniqueCustomers { get; set; }
     public int LowStockCount { get; set; }
+    public decimal AverageOrderValue { get; set; }
 }
 
 public class SalesTrendPointDto

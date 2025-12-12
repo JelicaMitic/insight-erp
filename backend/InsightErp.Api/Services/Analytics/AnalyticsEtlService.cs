@@ -113,8 +113,11 @@ public class AnalyticsEtlService : IAnalyticsEtlService
                 TotalSales = docs.Sum(x => x.TotalSales),
                 TotalOrders = docs.Sum(x => x.TotalOrders),
                 UniqueCustomers = docs.Sum(x => x.UniqueCustomers),
-                EtlRunId = DateTime.UtcNow
-            };
+                EtlRunId = DateTime.UtcNow,
+                AverageOrderValue = docs.Sum(x => x.TotalOrders) > 0
+                    ? docs.Sum(x => x.TotalSales) / docs.Sum(x => x.TotalOrders)
+                    : 0m,
+                        };
 
             await _cache.SetAsync($"analytics:preset:{days}d", preset, TimeSpan.FromHours(24));
         }
