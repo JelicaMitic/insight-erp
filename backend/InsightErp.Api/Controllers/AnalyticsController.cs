@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using InsightErp.Api.Models.Inventory;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -23,15 +24,16 @@ public class AnalyticsController : ControllerBase
         [FromQuery] DateTime? from,
         [FromQuery] DateTime? to,
         [FromQuery] int? preset,
+        [FromQuery] int? warehouseId,
         CancellationToken ct)
     {
         if (preset is 7 or 30 or 365)
-            return await _svc.GetOverviewPresetAsync(preset.Value, ct);
+            return await _svc.GetOverviewPresetAsync(preset.Value, warehouseId, ct);
 
         if (from is null || to is null)
             throw new ArgumentException("Provide either 'preset' (7|30|365) OR both 'from' and 'to'.");
 
-        return await _svc.GetOverviewAsync(from.Value, to.Value, ct);
+        return await _svc.GetOverviewAsync(from.Value, to.Value, warehouseId, ct);
     }
 
     [HttpGet("sales-trend")]
@@ -39,16 +41,17 @@ public class AnalyticsController : ControllerBase
         [FromQuery] DateTime? from,
         [FromQuery] DateTime? to,
         [FromQuery] int? preset,
+        [FromQuery] int? warehouseId,
         CancellationToken ct)
     {
         if (preset is 7 or 30 or 365)
         {
             var (pf, pt) = ResolvePresetUtc(preset.Value);
-            return await _svc.GetSalesTrendAsync(pf, pt, ct);
+            return await _svc.GetSalesTrendAsync(pf, pt,warehouseId, ct);
         }
         if (from is null || to is null)
             throw new ArgumentException("Provide either 'preset' (7|30|365) OR both 'from' and 'to'.");
-        return await _svc.GetSalesTrendAsync(from.Value, to.Value, ct);
+        return await _svc.GetSalesTrendAsync(from.Value, to.Value, warehouseId, ct);
     }
 
     [HttpGet("by-warehouse")]
@@ -73,17 +76,18 @@ public class AnalyticsController : ControllerBase
         [FromQuery] DateTime? from,
         [FromQuery] DateTime? to,
         [FromQuery] int? preset,
+        [FromQuery] int? warehouseId,
         [FromQuery] int take = 10,
         CancellationToken ct = default)
     {
         if (preset is 7 or 30 or 365)
         {
             var (pf, pt) = ResolvePresetUtc(preset.Value);
-            return await _svc.GetTopProductsAsync(pf, pt, take, ct);
+            return await _svc.GetTopProductsAsync(pf, pt, warehouseId, take, ct);
         }
         if (from is null || to is null)
             throw new ArgumentException("Provide either 'preset' (7|30|365) OR both 'from' and 'to'.");
-        return await _svc.GetTopProductsAsync(from.Value, to.Value, take, ct);
+        return await _svc.GetTopProductsAsync(from.Value, to.Value, warehouseId, take, ct);
     }
 
     [HttpPost("etl/run")]

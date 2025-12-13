@@ -14,6 +14,9 @@ public class SalesAggregateDocument
     public List<WarehouseSalesEmbedded> SalesByWarehouse { get; set; } = new();
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime EtlRunId { get; set; } = DateTime.UtcNow;
+
+    public List<WarehouseTopProductsEmbedded> TopProductsByWarehouse { get; set; } = new();
+
 }
 
 public class TopProductEmbedded
@@ -29,4 +32,11 @@ public class WarehouseSalesEmbedded
     public int WarehouseId { get; set; }
     public string Name { get; set; } = "";
     public decimal Revenue { get; set; }
+}
+
+public class WarehouseTopProductsEmbedded
+{
+    public int WarehouseId { get; set; }
+    public string Name { get; set; } = "";
+    public List<TopProductEmbedded> TopProducts { get; set; } = new();
 }

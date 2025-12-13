@@ -38,6 +38,8 @@ public class AnalyticsEtlService : IAnalyticsEtlService
         var daily = (await multi.ReadAsync<(DateTime SalesDate, decimal TotalSales, int TotalOrders, int UniqueCustomers)>()).ToList();
         var byWh = (await multi.ReadAsync<(DateTime SalesDate, int WarehouseId, string WarehouseName, decimal Revenue)>()).ToList();
         var top = (await multi.ReadAsync<(DateTime SalesDate, int ProductId, string ProductName, int Quantity, decimal Revenue)>()).ToList();
+        var topByWh = (await multi.ReadAsync<(DateTime SalesDate, int WarehouseId, string WarehouseName, int ProductId, string ProductName, int Quantity, decimal Revenue)>()).ToList();
+
 
         var etlRunId = DateTime.UtcNow;
         var ops = new List<WriteModel<SalesAggregateDocument>>();
@@ -67,6 +69,28 @@ public class AnalyticsEtlService : IAnalyticsEtlService
                     Revenue = t.Revenue
                 }).ToList();
 
+            var topProductsByWarehouse = topByWh
+                    .Where(x => x.SalesDate.Date == date)
+                    .GroupBy(x => new { x.WarehouseId, x.WarehouseName })
+                    .Select(g => new WarehouseTopProductsEmbedded
+                    {
+                        WarehouseId = g.Key.WarehouseId,
+                        Name = g.Key.WarehouseName,
+                        TopProducts = g
+                            .OrderByDescending(p => p.Revenue)
+                            .Take(10)
+                            .Select(p => new TopProductEmbedded
+                            {
+                                ProductId = p.ProductId,
+                                Name = p.ProductName,
+                                Quantity = p.Quantity,
+                                Revenue = p.Revenue
+                            })
+                            .ToList()
+                    })
+                    .ToList();
+
+
             var filter = Builders<SalesAggregateDocument>.Filter.Eq(x => x.Date, date);
 
             var update = Builders<SalesAggregateDocument>.Update
@@ -75,6 +99,7 @@ public class AnalyticsEtlService : IAnalyticsEtlService
                 .Set(x => x.UniqueCustomers, d.UniqueCustomers)
                 .Set(x => x.SalesByWarehouse, salesByWarehouse)
                 .Set(x => x.TopProducts, topProducts)
+                .Set(x => x.TopProductsByWarehouse, topProductsByWarehouse)
                 .Set(x => x.EtlRunId, etlRunId)
                 .SetOnInsert(x => x.Date, date);
 
@@ -88,6 +113,8 @@ public class AnalyticsEtlService : IAnalyticsEtlService
 
         await _cache.RemoveByPrefixAsync("analytics:overview:");
         await _cache.RemoveByPrefixAsync("analytics:trend:");
+        await _cache.RemoveByPrefixAsync("analytics:top:");
+
 
         await BuildPresetsAsync(ct);
 
@@ -117,11 +144,11 @@ public class AnalyticsEtlService : IAnalyticsEtlService
                 AverageOrderValue = docs.Sum(x => x.TotalOrders) > 0
                     ? docs.Sum(x => x.TotalSales) / docs.Sum(x => x.TotalOrders)
                     : 0m,
-                        };
+            };
 
             await _cache.SetAsync($"analytics:preset:{days}d", preset, TimeSpan.FromHours(24));
         }
-        
+
 
         Console.WriteLine("[ETL] Preset ranges (7d/30d/365d) calculated and cached.");
     }
