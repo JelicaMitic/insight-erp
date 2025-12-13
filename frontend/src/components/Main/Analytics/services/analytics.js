@@ -17,11 +17,11 @@ const handleAxiosError = (error) => {
 };
 
 // ------ PRESET (7/30/365) ------
-export const getOverviewPreset = async (days) => {
+export const getOverviewPreset = async (days, warehouseId) => {
   try {
     const res = await axios.get(`${BASE_URL}/api/Analytics/overview`, {
       headers: { ...getAuthHeaders() },
-      params: { preset: days }, // 7 | 30 | 365
+      params: { preset: days, warehouseId: warehouseId ?? undefined }, // 7 | 30 | 365
     });
     return res.data;
   } catch (error) {
@@ -29,11 +29,11 @@ export const getOverviewPreset = async (days) => {
   }
 };
 
-export const getSalesTrendPreset = async (days) => {
+export const getSalesTrendPreset = async (days, warehouseId) => {
   try {
     const res = await axios.get(`${BASE_URL}/api/Analytics/sales-trend`, {
       headers: { ...getAuthHeaders() },
-      params: { preset: days },
+      params: { preset: days, warehouseId: warehouseId ?? undefined },
     });
     return res.data;
   } catch (error) {
@@ -53,11 +53,11 @@ export const getSalesByWarehousePreset = async (days) => {
   }
 };
 
-export const getTopProductsPreset = async (days) => {
+export const getTopProductsPreset = async (days, warehouseId) => {
   try {
     const res = await axios.get(`${BASE_URL}/api/Analytics/top-products`, {
       headers: { ...getAuthHeaders() },
-      params: { preset: days },
+      params: { preset: days, warehouseId: warehouseId ?? undefined },
     });
     return res.data;
   } catch (error) {
@@ -66,11 +66,11 @@ export const getTopProductsPreset = async (days) => {
 };
 
 // ------ CUSTOM (from/to) ------
-export const getOverview = async (from, to) => {
+export const getOverview = async (from, to, warehouseId) => {
   try {
     const res = await axios.get(`${BASE_URL}/api/Analytics/overview`, {
       headers: { ...getAuthHeaders() },
-      params: { from, to },
+      params: { from, to, warehouseId: warehouseId ?? undefined },
     });
     return res.data;
   } catch (error) {
@@ -78,11 +78,11 @@ export const getOverview = async (from, to) => {
   }
 };
 
-export const getSalesTrend = async (from, to) => {
+export const getSalesTrend = async (from, to, warehouseId) => {
   try {
     const res = await axios.get(`${BASE_URL}/api/Analytics/sales-trend`, {
       headers: { ...getAuthHeaders() },
-      params: { from, to },
+      params: { from, to, warehouseId: warehouseId ?? undefined },
     });
     return res.data;
   } catch (error) {
@@ -102,11 +102,11 @@ export const getSalesByWarehouse = async (from, to) => {
   }
 };
 
-export const getTopProducts = async (from, to) => {
+export const getTopProducts = async (from, to, warehouseId) => {
   try {
     const res = await axios.get(`${BASE_URL}/api/Analytics/top-products`, {
       headers: { ...getAuthHeaders() },
-      params: { from, to },
+      params: { from, to, warehouseId: warehouseId ?? undefined },
     });
     return res.data;
   } catch (error) {

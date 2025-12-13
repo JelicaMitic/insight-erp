@@ -9,7 +9,11 @@ import {
 } from "recharts";
 import { Box } from "@mui/material";
 
-export default function WarehouseBarChart({ data }) {
+export default function WarehouseBarChart({
+  data,
+  selectedWarehouseId,
+  onSelectWarehouse,
+}) {
   return (
     <Box sx={{ height: 320, overflow: "visible" }}>
       <ResponsiveContainer width="100%" height="100%">
@@ -32,7 +36,20 @@ export default function WarehouseBarChart({ data }) {
             labelFormatter={(name) => `Warehouse: ${name}`}
             cursor={{ fill: "#5468986b", opacity: 1 }}
           />
-          <Bar dataKey="revenue" fill="#4caf50" radius={[6, 6, 0, 0]} />
+          <Bar
+            dataKey="revenue"
+            fill="#4caf50"
+            radius={[6, 6, 0, 0]}
+            onClick={(bar) => {
+              const payload = bar?.payload;
+              if (!payload) return;
+
+              onSelectWarehouse?.({
+                warehouseId: payload.warehouseId,
+                warehouseName: payload.warehouseName,
+              });
+            }}
+          />
         </BarChart>
       </ResponsiveContainer>
     </Box>

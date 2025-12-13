@@ -24,6 +24,7 @@ import { useAuthStore } from "../../../store/auth";
 export default function Analytics() {
   const [mode, setMode] = useState("preset"); // "preset" | "custom"
   const [presetDays, setPresetDays] = useState(7);
+  const [selectedWarehouse, setSelectedWarehouse] = useState(null);
 
   const navigate = useNavigate();
 
@@ -48,20 +49,21 @@ export default function Analytics() {
   const loadAll = async () => {
     try {
       let ov, tr, wh, tp;
+      const whId = selectedWarehouse?.warehouseId ?? null;
 
       if (mode === "preset") {
         [ov, tr, wh, tp] = await Promise.all([
-          getOverviewPreset(presetDays),
-          getSalesTrendPreset(presetDays),
+          getOverviewPreset(presetDays, whId),
+          getSalesTrendPreset(presetDays, whId),
           getSalesByWarehousePreset(presetDays),
-          getTopProductsPreset(presetDays),
+          getTopProductsPreset(presetDays, whId),
         ]);
       } else {
         [ov, tr, wh, tp] = await Promise.all([
-          getOverview(range.from, range.to),
-          getSalesTrend(range.from, range.to),
+          getOverview(range.from, range.to, whId),
+          getSalesTrend(range.from, range.to, whId),
           getSalesByWarehouse(range.from, range.to),
-          getTopProducts(range.from, range.to),
+          getTopProducts(range.from, range.to, whId),
         ]);
       }
 
@@ -76,7 +78,7 @@ export default function Analytics() {
 
   useEffect(() => {
     loadAll();
-  }, [mode, presetDays, range.from, range.to]);
+  }, [mode, presetDays, range.from, range.to, selectedWarehouse?.warehouseId]);
 
   const handlePreset = (val) => {
     if (val === "custom") {
@@ -142,6 +144,21 @@ export default function Analytics() {
         />
       </Box>
 
+      {selectedWarehouse && (
+        <Box sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <Typography variant="body2">
+            Filtered by warehouse: <b>{selectedWarehouse.warehouseName}</b>
+          </Typography>
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => setSelectedWarehouse(null)}
+          >
+            Clear
+          </Button>
+        </Box>
+      )}
+
       {overview && (
         <Grid container spacing={2} my={2}>
           <Grid item xs={12} md={3} justifyContent="center">
@@ -191,7 +208,11 @@ export default function Analytics() {
         <Typography variant="h6" mb={1}>
           🏭 Sales by warehouse
         </Typography>
-        <WarehouseBarChart data={warehouses} />
+        <WarehouseBarChart
+          data={warehouses}
+          selectedWarehouseId={selectedWarehouse?.warehouseId ?? null}
+          onSelectWarehouse={(w) => setSelectedWarehouse(w)}
+        />
       </Box>
 
       <Box my={3}>
